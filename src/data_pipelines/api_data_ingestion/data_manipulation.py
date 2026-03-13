@@ -15,7 +15,6 @@ def calc_daily_return(data: pd.DataFrame) -> pd.DataFrame:
 
     return data
 
-
 def calc_add_vwap(data: pd.DataFrame) -> pd.DataFrame:
     """
     Calculates and includes the volume weighted average price for the data provided.

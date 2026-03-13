@@ -12,9 +12,15 @@ INDUSTRIES: list[str] = [
     "Semiconductor Equipment"
 ]
 
-FINANCIAL_METRICS: list[str] = [
-
-]
+FINANCIAL_METRICS: dict[str, str] = {
+    "open_p": "Open",
+    "close_p": "Close",
+    "high_p": "High",
+    "low_p": "Low",
+    "volume": "Volume",
+    "dividend": "Dividends",
+    "stock_splits": "Stock Splits"
+}
 
 FUNDAMENTAL_METRICS = {
     "income_statement": {

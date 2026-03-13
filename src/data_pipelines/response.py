@@ -7,7 +7,7 @@ import requests
 
 from src import config
 
-def get_response(url: str) -> requests.Response:
+def get_response(url: str) -> dict[str, dict[str, str]]:
     """
     Send an HTTP GET request to the provided URL and returns a parsed JSON.
     :param url: url used to retrieve desired data.

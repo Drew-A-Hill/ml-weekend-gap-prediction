@@ -3,6 +3,8 @@ File: featured_company_retrieval.py
 Author: Drew Hill
 This file is used to find a list of companies that satisfy requirements needed to extract features for the model.
 """
+from typing import Any
+
 import pandas as pd
 import yfinance as yf
 
@@ -14,41 +16,53 @@ def full_list_of_tickers() -> pd.Series:
     :return: A panda series consisting of all companies registered with the SEC.
     """
     url: str = "https://www.sec.gov/files/company_tickers.json"
-    return pd.Series(get_response(url))
+    data: dict[str, dict[str, str]] = get_response(url)
+    ticker_list: list[str] = []
 
-def check_companies_by_sector(ticker: yf.Ticker, industry_list: list[str]) -> bool:
+    for company in data.values():
+        ticker_list.append(company["ticker"].upper())
+
+    return pd.Series(ticker_list)
+
+def check_companies_by_industry(company_info: dict[str, Any], industry_list: list[str]) -> bool:
     """
     Checks that company is a part of the industry list.
-    :param ticker: Ticker of the company being checked.
+    :param company_info: Info about company being evaluated.
     :param industry_list: List of industries to check company against.
     :return: True if the company is in the list of industries, False otherwise.
     """
-    if ticker.info["industry"] in industry_list:
+    industry: str = company_info.get("industry")
+
+    if industry and industry in industry_list:
         return True
 
     return False
 
-def check_companies_by_market_cap(ticker: yf.Ticker, min_cap: int, max_cap: int) -> bool:
+def check_companies_by_market_cap(company_info: dict[str, Any], min_cap: int, max_cap: int) -> bool:
     """
     Checks if the company is within the market cap range.
-    :param ticker: Ticker of the company being checked.
+    :param company_info: Info about company being evaluated.
     :param min_cap: Minimum market cap allowable.
     :param max_cap: Maximum market cap allowable.
     :return: True if the company is within the market cap range, False otherwise.
     """
-    if min_cap <= ticker.info["marketCap"] <= max_cap:
+    m_cap: float = company_info.get("marketCap")
+
+    if m_cap and min_cap <= m_cap <= max_cap:
         return True
 
     return False
 
-def check_companies_by_profitability(ticker: yf.Ticker, margin: float) -> bool:
+def check_companies_by_profitability(company_info: dict[str, Any], min_margin: float) -> bool:
     """
     Checks if the company has a level of profitability.
-    :param margin: Profit margin used as the metric.
-    :param ticker: Ticker of the company being checked.
+    :param company_info: Info about company being evaluated.
+    :param min_margin: Profit margin used as the metric.
     :return: True if the company has a level of profitability, False otherwise.
     """
-    if ticker.info["profitMargins"] > margin:
+    margin: float = company_info.get("profitMargins")
+
+    if margin and margin > min_margin:
         return True
 
     return False

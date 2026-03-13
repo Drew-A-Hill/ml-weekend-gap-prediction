@@ -1,42 +1,23 @@
 """
-
+File: financial_data_retrieval.py
+Author: Drew Hill
+This file is used for assembling all the needed price data for feature selection.
 """
 import pandas as pd
-import yfinance as yf
 from yfinance import Ticker
 
-
-def add_vwap(data: pd.DataFrame) -> pd.DataFrame:
+def get_price_details_by_ticker(ticker: Ticker) -> pd.DataFrame:
     """
-
-    :param data:
-    :return:
-    """
-    tp: int = (data["High"] + data["Low"] + data["Close"]) / 3
-    data["vwap"] = (tp * data["Volume"]).cumsum() / data["Volume"].cumsum()
-
-    return data
-
-def add_weekly_avg(data: pd.DataFrame) -> pd.DataFrame:
-    """
-
-    :param data:
-    :return:
-    """
-    data["weekly_avg_vol"] = data["Volume"].rolling(5).mean()
-
-    return data
-
-def get_price_info(ticker: Ticker) -> pd.DataFrame:
-    """
-
+    Retrieves price details for a given ticker. This data includes Open, High, Low, Close and Volume.
     :param ticker:
     :return:
     """
     data: pd.DataFrame = ticker.history(period="10y", interval="1d")
+    data["daily_return"] = data["Close"].pct_change()
+
+    # Adds ticker as first col in dataframe
     data["ticker"] = ticker.ticker
 
-    data = add_vwap(data)
+    columns = data["ticker"] + [c for c in data.columns if c != "ticker"]
 
-
-    return data
+    return data[columns]

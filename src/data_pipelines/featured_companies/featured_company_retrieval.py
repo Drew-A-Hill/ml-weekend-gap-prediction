@@ -8,6 +8,7 @@ from typing import Any
 import pandas as pd
 import yfinance as yf
 
+import config
 from src.data_pipelines.response import get_response
 
 def full_list_of_tickers() -> pd.Series:
@@ -38,31 +39,28 @@ def check_companies_by_industry(company_info: dict[str, Any], industry_list: lis
 
     return False
 
-def check_companies_by_market_cap(company_info: dict[str, Any], min_cap: int, max_cap: int) -> bool:
+def check_companies_by_market_cap(company_info: dict[str, Any]) -> bool:
     """
     Checks if the company is within the market cap range.
     :param company_info: Info about company being evaluated.
-    :param min_cap: Minimum market cap allowable.
-    :param max_cap: Maximum market cap allowable.
     :return: True if the company is within the market cap range, False otherwise.
     """
     m_cap: float = company_info.get("marketCap")
 
-    if m_cap and min_cap <= m_cap <= max_cap:
+    if m_cap and config.MIN_CAP <= m_cap <= config.MAX_CAP:
         return True
 
     return False
 
-def check_companies_by_profitability(company_info: dict[str, Any], min_margin: float) -> bool:
+def check_companies_by_profitability(company_info: dict[str, Any]) -> bool:
     """
     Checks if the company has a level of profitability.
     :param company_info: Info about company being evaluated.
-    :param min_margin: Profit margin used as the metric.
     :return: True if the company has a level of profitability, False otherwise.
     """
     margin: float = company_info.get("profitMargins")
 
-    if margin and margin > min_margin:
+    if margin and margin > config.MIN_PROFIT_MARGIN:
         return True
 
     return False

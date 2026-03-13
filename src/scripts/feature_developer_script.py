@@ -28,8 +28,8 @@ def dev_featured_companies() -> Generator[yf.Ticker, None] | None:
         company_info: dict[str, Any] = ticker.info
         if count < 80:
             if (featured.check_companies_by_industry(company_info, config.INDUSTRIES)
-                and featured.check_companies_by_market_cap(company_info, m_cap_min, m_cap_max)
-                and featured.check_companies_by_profitability(company_info, .05)
+                and featured.check_companies_by_market_cap(company_info)
+                and featured.check_companies_by_profitability(company_info)
             ):
                 list_t.append(ticker_str)
                 print(f"Count: {count} Ticker: {ticker_str}")
@@ -55,7 +55,7 @@ def dev_data() -> pd.DataFrame:
     df: pd.DataFrame = pd.DataFrame()
 
     for company in dev_featured_companies():
-        new_df: pd.DataFrame = price_data.build_custom_single_price_df(company, "10y", "1d", open_p=True)
+        new_df: pd.DataFrame = price_data.build_custom_single_price_df(company)
         df = pd.concat([df, new_df])
 
     return df

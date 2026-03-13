@@ -8,7 +8,7 @@ from typing import Generator
 import pandas as pd
 import yfinance as yf
 
-import src.data_pipelines.featured_companies.featured_company_retrieval as featured
+import data_pipelines.featured_companies.featured_company_retrieval as featured
 from src import config
 
 def dev_featured_companies() -> Generator[yf.Ticker, None]:

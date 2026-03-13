@@ -1,9 +1,19 @@
 """
-File: data_calculations.py
+File: data_manipulation.py
 Author: Drew Hill
 This file is used for calculating any values to be used for feature selection from provided metrics.
 """
 import pandas as pd
+
+def calc_daily_return(data: pd.DataFrame) -> pd.DataFrame:
+    """
+    Calculates and includes the daily return for the data provided.
+    :param data: Dataframe that contains data used to calculate the daily return value.
+    :return: New dataframe updated with the calculated daily return value.
+    """
+    data["daily_return"] = data["Close"].pct_change()
+
+    return data
 
 
 def calc_add_vwap(data: pd.DataFrame) -> pd.DataFrame:

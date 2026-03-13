@@ -52,3 +52,5 @@ def check_companies_by_profitability(ticker: yf.Ticker, margin: float) -> bool:
         return True
 
     return False
+
+

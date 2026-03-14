@@ -10,12 +10,10 @@ import yfinance as yf
 
 import config
 
-def get_price_history_by_ticker(ticker: yf.Ticker, period: str, interval: str) -> pd.DataFrame:
+def get_price_history_by_ticker(ticker: yf.Ticker) -> pd.DataFrame:
     """
     Retrieves price details for a given ticker. This data includes Open, High, Low, Close and Volume.
     :param ticker: ticker object for data to be retrieved and included.
-    :param period: period of data to be retrieved and included.
-    :param interval: interval of data to be retrieved and included.
     :return: pd.DataFrame
     """
     data: pd.DataFrame = ticker.history(period=config.PERIOD, interval=config.INTERVAL)
@@ -30,19 +28,13 @@ def _get_list_of_req_metrics(sig: dict[str, Any]) -> list[str]:
     :return: list that contains the required metrics for a ticker.
     """
     include_list: list[str] = []
-    all_metrics_flag = False
 
     for param, input_bool in sig.items():
         if isinstance(input_bool, bool):
             if input_bool:
                 include_list.append(param)
-                all_metrics_flag = True
 
-    if all_metrics_flag:
-        return list(sig.keys())
-
-    else:
-        return include_list
+    return include_list
 
 def build_custom_single_price_df(
         ticker: yf.Ticker,
@@ -71,15 +63,14 @@ def build_custom_single_price_df(
     include_list: list[str] = _get_list_of_req_metrics(locals())
 
     df: pd.DataFrame = pd.DataFrame()
-    info: dict[str, Any] = ticker.info
 
     df["Date"] = price_data.index
     df["Year"] = price_data.index.year
     df["Quarter"] = price_data.index.quarter
     df["Ticker"] = ticker.ticker
+    df.set_index("Date", inplace=True)
 
     for metric in include_list:
-        df.set_index("Date", inplace=True)
-        df[config.FINANCIAL_METRICS[metric]] = price_data[config.FINANCIAL_METRICS[metric]]
+        df[config.FINANCIAL_METRICS[metric]] = price_data.get(config.FINANCIAL_METRICS.get(metric))
 
     return df

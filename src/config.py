@@ -11,6 +11,7 @@ INTERVAL: str = "1d"
 MIN_CAP: int = 10_000_000_000
 MAX_CAP: int = 200_000_000_000
 MIN_PROFIT_MARGIN: float = 0.05
+MIN_PUBLIC_AGE: int = 10
 
 INDUSTRIES: list[str] = [
     "Semiconductors",

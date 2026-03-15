@@ -64,10 +64,10 @@ FUNDAMENTAL_METRICS = {
         ],
         "cost_of_revenue": [
             "CostOfRevenue"
-        ]
-#         "gross_profit": [
-#             "GrossProfit"
-#         ],
+        ],
+        "gross_profit": [
+            "GrossProfit"
+        ],
 #         "operating_expenses": [
 #             "OperatingExpenses"
 #         ],
@@ -77,13 +77,13 @@ FUNDAMENTAL_METRICS = {
 #         "selling_general_admin": [
 #             "SellingGeneralAndAdministrativeExpense"
 #         ],
-#         "operating_income": [
-#             "OperatingIncomeLoss"
-#         ],
-#         "net_income": [
-#             "NetIncomeLoss",
-#             "ProfitLoss"
-#         ],
+        "operating_income": [
+            "OperatingIncomeLoss"
+        ],
+        "net_income": [
+            "NetIncomeLoss",
+            "ProfitLoss"
+        ]
 #         "income_tax_expense": [
 #             "IncomeTaxExpenseBenefit"
 #         ],
@@ -102,12 +102,12 @@ FUNDAMENTAL_METRICS = {
 #         "shares_diluted": [
 #             "WeightedAverageNumberOfDilutedSharesOutstanding"
 #         ]
-#     },
-#
-#     "balance_sheet": {
-#         "assets": [
-#             "Assets"
-#         ],
+    },
+
+    "balance_sheet": {
+        "assets": [
+            "Assets"
+        ],
 #         "current_assets": [
 #             "AssetsCurrent"
 #         ],
@@ -129,9 +129,9 @@ FUNDAMENTAL_METRICS = {
 #         "intangible_assets": [
 #             "IntangibleAssetsNetExcludingGoodwill"
 #         ],
-#         "liabilities": [
-#             "Liabilities"
-#         ],
+        "liabilities": [
+            "Liabilities"
+        ],
 #         "current_liabilities": [
 #             "LiabilitiesCurrent"
 #         ],
@@ -145,9 +145,9 @@ FUNDAMENTAL_METRICS = {
 #             "LongTermDebt",
 #             "LongTermDebtNoncurrent"
 #         ],
-#         "equity": [
-#             "StockholdersEquity"
-#         ],
+        "equity": [
+            "StockholdersEquity"
+        ]
 #         "retained_earnings": [
 #             "RetainedEarningsAccumulatedDeficit"
 #         ]

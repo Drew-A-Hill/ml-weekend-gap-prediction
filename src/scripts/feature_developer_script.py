@@ -14,6 +14,7 @@ import data_pipelines.api_data_ingestion.price_data_retrieval as price_data
 import data_pipelines.featured_companies.featured_company_filters as filters
 from data_pipelines.api_data_ingestion.df_expansion import merge_df_columns
 from data_pipelines.api_data_ingestion.fundamentals_data_retrieval import build_single_ticker_fundamentals_df
+from data_io import read_write_data as read_write
 
 
 #TODO MAYBE MOVE THIS TO FILTER AND MAKE THE DATA AN INPUT
@@ -88,11 +89,13 @@ def main():
     # data: pd.DataFrame = dev_price_data()
     prices = dev_price_data()
     fundamentals = dev_fundamental_data()
-
-    df = merge_df_columns([prices, fundamentals])
-    print(df)
+    # TODO FIX MERGING
+    # df = merge_df_columns([prices, fundamentals])
+    # print(df)
     print(prices)
     print(fundamentals)
+    read_write.write_to_csv(fundamentals, "example_fundamentals.csv")
+    read_write.write_to_csv(prices, "example_prices.csv")
 
 if __name__ == "__main__":
     main()

@@ -3,11 +3,10 @@ File: company_retrieval.py
 Author: Drew Hill
 This file is used to find a list of companies that satisfy requirements needed to extract features for the model.
 """
-from typing import Any
 
 import pandas as pd
 
-from src.data_pipelines.response import get_response
+from data_pipelines.api_data_ingestion.response import get_response
 
 def get_all_company_data_response() -> dict[str, dict[str, str]]:
     """
@@ -37,6 +36,6 @@ def get_full_list_cik(data: dict[str, dict[str, str]]) ->pd.Series:
     cik_list: list[str] = []
 
     for company in data.values():
-        cik_list.append(company["CIK"].upper())
+        cik_list.append(company["cik_str"])
 
     return pd.Series(cik_list)

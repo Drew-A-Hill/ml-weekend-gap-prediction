@@ -36,7 +36,7 @@ def _get_list_of_req_metrics(sig: dict[str, Any]) -> list[str]:
 
     return include_list
 
-def build_custom_single_price_df(
+def build_single_ticker_price_df(
         ticker: yf.Ticker,
         open_p: bool = False,
         close_p: bool = False,

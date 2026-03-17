@@ -1,5 +1,5 @@
 """
-File: data_manipulation.py
+File: data_calculations.py
 Author: Drew Hill
 This file is used for calculating any values to be used for feature selection from provided metrics.
 """
@@ -35,3 +35,5 @@ def calc_add_weekly_avg(data: pd.DataFrame) -> pd.DataFrame:
     data["weekly_avg_vol"] = data["Volume"].rolling(5).mean()
 
     return data
+
+#TODO ADD TECHNICAL INDICATORS

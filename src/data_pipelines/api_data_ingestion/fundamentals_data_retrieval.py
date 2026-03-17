@@ -4,12 +4,10 @@ Author: Drew Hill
 This file is used for assembling all the needed fundamental data for feature selection.
 """
 from typing import Any
-
 import pandas as pd
-
 import config
 from config import FUNDAMENTAL_METRICS
-from data_pipelines.api_data_ingestion.response import get_response
+from utils.pipline_helpers import get_response
 
 def _filter_by_year(df: pd.DataFrame, num_years: int) -> pd.DataFrame | None:
     """
@@ -18,11 +16,11 @@ def _filter_by_year(df: pd.DataFrame, num_years: int) -> pd.DataFrame | None:
     :param num_years: Number of years to include.
     :Returns: Data for relevant years.
     """
+    if df.empty:
+        return df
+
     latest_fy: int = df["fy"].max()
-
-    df = df[df["fy"] >= latest_fy - (num_years - 1)]
-
-    return df
+    return df[df["fy"] >= latest_fy - (num_years - 1)]
 
 def _filter_by_quarter(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -83,7 +81,6 @@ def _clean_metric(data: list[dict[str, Any]], years: int) -> list[dict[str, Any]
     df = pd.DataFrame(data)
 
     df = _filter_by_quarter(df)
-
     df = _filter_by_forms_and_filings(df)
 
     # Remove duplicate fiscal periods
@@ -133,9 +130,9 @@ def build_single_ticker_fundamentals_df(cik: int, ticker: str, years: int) -> pd
 
             df.rename(
                 columns={
-                    "fy": "year",
-                    "fp": "quarter",
-                    "val": metric_name,
+                    "fy": "Year",
+                    "fp": "Quarter",
+                    "val": metric_name.upper(),
                 },
                 inplace=True,
             )
@@ -145,13 +142,19 @@ def build_single_ticker_fundamentals_df(cik: int, ticker: str, years: int) -> pd
     if not metric_frames:
         return pd.DataFrame()
 
+    # Merge all metrics together
     df_final = metric_frames[0]
 
     for df in metric_frames[1:]:
-        df_final = df_final.merge(df, on=["year", "quarter"], how="outer")
+        df_final = df_final.merge(df, on=["Year", "Quarter"], how="outer")
 
-    df_final.insert(0, "ticker", ticker)
+    df_final.insert(0, "Ticker", ticker)
 
-    df_final.sort_values(["year", "quarter"], inplace=True)
+    df_final.sort_values(["Year", "Quarter"], inplace=True)
+
+    latest_year = df_final["Year"].max()
+    df_final = df_final[df_final["Year"] >= latest_year - (years - 1)]
+
+    df_final.reset_index(drop=True, inplace=True)
 
     return df_final

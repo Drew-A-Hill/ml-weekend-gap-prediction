@@ -14,7 +14,7 @@ def merge_df_columns(data_frames: list[pd.DataFrame]) -> pd.DataFrame:
     df: pd.DataFrame = data_frames[0]
 
     for data in data_frames[1:]:
-        df = pd.merge(data, df, on=["ticker", "year", "quarter"], how="inner")
+        df = pd.merge(df, data, on=["Ticker", "Year", "Quarter"], how="left")
 
     return df
 

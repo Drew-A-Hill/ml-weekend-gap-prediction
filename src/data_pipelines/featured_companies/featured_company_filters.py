@@ -1,16 +1,34 @@
 """
 File: featured_company_filters.py
 Author: Drew Hill
-Utilities for filtering companies based on industry, market capitalization, and profitability to determine the set of
+Used for the purpose of filtering companies based on industry, market capitalization, and profitability to determine the set of
 companies used in the modeling pipeline.
 """
-import datetime
 from typing import Any
-
+import datetime
 import pandas as pd
 import yfinance as yf
-
+from urllib3.exceptions import HTTPError
 import config
+
+def _filter_by_financial_market(company_info: dict[str, Any]) -> bool:
+    """
+    This is a helper filter that ensures that the companies being filtered are traded on the NYSE, NASDAQ, or American
+    NYSE. This increases the probability that the company will have its market cap in the fast info.
+    :param company_info: Info about company being evaluated.
+    :return: True if the company is on one of the designated exchanges, False otherwise.
+    """
+    try:
+        if company_info.get("exchange") in config.EXCHANGE:
+            return True
+
+        return False
+
+    except HTTPError:
+        return False
+
+    except KeyError:
+        return False
 
 def filter_by_industry(company_info: dict[str, Any]) -> bool:
     """
@@ -20,7 +38,7 @@ def filter_by_industry(company_info: dict[str, Any]) -> bool:
     """
     industry: str = company_info.get("industry")
 
-    if industry and industry in config.INDUSTRIES:
+    if industry in config.INDUSTRIES:
         return True
 
     return False
@@ -31,15 +49,16 @@ def filter_by_market_cap(company_info: dict[str, Any]) -> bool | None:
     :param company_info: Info about company being evaluated.
     :return: True if the company is within the market cap range, False otherwise.
     """
-    m_cap: float = company_info.get("marketCap")
+    try:
+        m_cap = company_info.get("marketCap")
 
-    if m_cap is None:
+        if m_cap is None:
+            return None
+
+        return config.MIN_CAP <= m_cap <= config.MAX_CAP
+
+    except HTTPError:
         return None
-
-    if config.MIN_CAP <= m_cap <= config.MAX_CAP:
-        return True
-
-    return False
 
 def filter_by_profitability(company_info: dict[str, Any]) -> bool:
     """
@@ -47,44 +66,67 @@ def filter_by_profitability(company_info: dict[str, Any]) -> bool:
     :param company_info: Info about company being evaluated.
     :return: True if the company has a level of profitability, False otherwise.
     """
-    margin: float = company_info.get("profitMargins")
+    try:
+        margin = company_info.get("profitMargins")
 
-    if margin and margin > config.MIN_PROFIT_MARGIN:
-        return True
+        if margin is not None and margin > config.MIN_PROFIT_MARGIN:
+            return True
 
-    return False
+        return False
+
+    except HTTPError:
+        return False
 
 def filter_by_public_age(ticker: yf.Ticker, pub_age: int) -> bool:
     """
     Checks if the company has been publicly traded for at minimum the required number of years.
     :param ticker: Ticker of company being evaluated.
     :param pub_age: Number of years the company being evaluated has been publicly traded.
+    :return: True if the company has been publicly traded for specified number of years, False otherwise.
     """
-    history: pd.DataFrame = ticker.history(period="max")
-    first_trade_date: pd.Timestamp = history.index.min()
+    try:
+        history: pd.DataFrame = ticker.history(period="max")
 
-    public_age: int = datetime.datetime.now().year - first_trade_date.year
+        if history.empty:
+            return False
 
-    return public_age >= pub_age
+        first_trade_date: pd.Timestamp = history.index.min()
+        public_age: int = datetime.datetime.now().year - first_trade_date.year
 
-def company_filter(ticker: yf.Ticker,
+        return public_age >= pub_age
+
+    except HTTPError:
+        return False
+
+def company_filter(ticker: str,
                    by_industry: bool = False,
                    by_market_cap: bool = False,
                    by_profitability: bool = False,
                    by_public_age: bool = False
                    ) -> bool:
     """
-
+    Filters companies based for given filtering criteria.
+    :param ticker: Ticker of company being evaluated.
+    :param by_industry: Whether to filter by industry.
+    :param by_market_cap: Whether to filter by market cap.
+    :param by_profitability: Whether to filter by profitability.
+    :param by_public_age: Whether to filter by public age.
+    :return: True if the company meets the criteria, False otherwise.
     """
+    ticker: yf.Ticker = yf.Ticker(ticker)
     company_info: dict[str, Any] = ticker.fast_info
 
+    if not _filter_by_financial_market(company_info):
+        return False
+
     if by_market_cap:
-        if filter_by_market_cap(company_info) is None:
+        market_cap_result: bool | None = filter_by_market_cap(company_info)
+
+        if market_cap_result is None:
             company_info = ticker.info
+            market_cap_result = filter_by_market_cap(company_info)
 
-            return filter_by_market_cap(company_info)
-
-        elif not filter_by_market_cap(company_info):
+        if not market_cap_result:
             return False
 
     company_info = ticker.info
@@ -102,12 +144,3 @@ def company_filter(ticker: yf.Ticker,
             return False
 
     return True
-
-
-
-
-
-
-
-
-

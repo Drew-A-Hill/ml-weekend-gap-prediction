@@ -3,12 +3,10 @@ File: price_data_retrieval.py
 Author: Drew Hill
 This file is used for assembling all the needed price data for feature selection.
 """
-from typing import Any, Generator
-
 import pandas as pd
 import yfinance as yf
-
 import config
+import utils.pipline_helpers as helpers
 
 def get_price_history_by_ticker(ticker: yf.Ticker) -> pd.DataFrame:
     """
@@ -19,22 +17,6 @@ def get_price_history_by_ticker(ticker: yf.Ticker) -> pd.DataFrame:
     data: pd.DataFrame = ticker.history(period=config.PERIOD, interval=config.INTERVAL)
 
     return data
-
-def _get_list_of_req_metrics(sig: dict[str, Any]) -> list[str]:
-    """
-    Helper method for that retrieves the list of required metrics for a ticker as marked in the parameters of the
-    method signature.
-    :param sig: Parameters and input as a dictionary.
-    :return: list that contains the required metrics for a ticker.
-    """
-    include_list: list[str] = []
-
-    for param, input_bool in sig.items():
-        if isinstance(input_bool, bool):
-            if input_bool:
-                include_list.append(param)
-
-    return include_list
 
 def build_single_ticker_price_df(
         ticker: yf.Ticker,
@@ -60,15 +42,17 @@ def build_single_ticker_price_df(
     :return: pd.DataFrame
     """
     price_data: pd.DataFrame = get_price_history_by_ticker(ticker)
-    include_list: list[str] = _get_list_of_req_metrics(locals())
+    include_list: list[str] = helpers.get_list_of_req_metrics(locals())
 
     df: pd.DataFrame = pd.DataFrame()
 
-    df["Date"] = price_data.index
-    df["Year"] = price_data.index.year
-    df["Quarter"] = price_data.index.quarter
+
     df["Ticker"] = ticker.ticker
-    df.set_index("Date", inplace=True)
+    df["Year"] = price_data.index.year
+    df["Quarter"] = price_data.index.quarter.map(lambda q: f"Q{q}")
+    df["Date"] = price_data.index
+
+    df.set_index("Ticker", inplace=True)
 
     for metric in include_list:
         df[config.FINANCIAL_METRICS[metric]] = price_data.get(config.FINANCIAL_METRICS.get(metric))

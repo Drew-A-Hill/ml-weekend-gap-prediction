@@ -88,7 +88,7 @@ def dev_price_and_fundamental_data_by_ticker(companies: pd.DataFrame) -> pd.Data
     p_df: pd.DataFrame = pd.DataFrame()
     f_df: pd.DataFrame = pd.DataFrame()
 
-    for ticker_str in ticker_iter_w_progress("Collect Data", companies["featured_tickers"]):
+    for ticker_str in ticker_iter_w_progress("Collecting Data", companies["featured_tickers"]):
 
         p_df = dev_price_data_by_ticker(p_df, yf.Ticker(ticker_str))
         f_df = dev_fundamental_data_by_ticker(f_df, get_cik(ticker_str), ticker_str)

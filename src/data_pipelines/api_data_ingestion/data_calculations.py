@@ -35,5 +35,3 @@ def calc_add_weekly_avg(data: pd.DataFrame) -> pd.DataFrame:
     data["weekly_avg_vol"] = data["Volume"].rolling(5).mean()
 
     return data
-
-#TODO ADD TECHNICAL INDICATORS

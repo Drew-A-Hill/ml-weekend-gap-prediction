@@ -21,6 +21,6 @@ builds.
 
 2. run feature development script
 ```bash
-    ./run_featured_company_dev.sh
+    ./run_script.sh
 ```
 3. To exit run just press CTRL + C

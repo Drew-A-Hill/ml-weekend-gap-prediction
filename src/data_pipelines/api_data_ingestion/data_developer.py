@@ -16,7 +16,7 @@ import data_pipelines.featured_companies.company_retrieval as featured
 import data_pipelines.featured_companies.company_filters_on_call as filters
 from data_io.read_write_data import read_from_csv
 from data_pipelines.featured_companies.company_retrieval import get_cik
-from utils.general import ticker_iter_w_progress
+from utils.terminal_run_status import ticker_iter_w_progress
 
 def dev_featured_companies(
         by_industry: bool = False,

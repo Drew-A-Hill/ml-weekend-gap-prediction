@@ -6,8 +6,10 @@ from pathlib import Path
 HEADER: dict[str, str] = {
     "User-Agent": "DrewHill hill.dr@northeastern.edu"
 }
+
 DATA_DIR = Path(__file__).resolve().parents[1] / "structured_csv_data_files"
 
+# -------------------------------------------------- Filtering --------------------------------------------------
 PERIOD: str = "10y"
 INTERVAL: str = "1d"
 

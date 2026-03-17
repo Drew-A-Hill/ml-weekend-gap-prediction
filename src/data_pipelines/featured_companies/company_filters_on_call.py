@@ -113,6 +113,7 @@ def filter_on_call(ticker: str,
     :param by_public_age: Whether to filter by public age.
     :return: True if the company meets the criteria, False otherwise.
     """
+
     ticker: yf.Ticker = yf.Ticker(ticker)
     company_info: dict[str, Any] = ticker.fast_info
 

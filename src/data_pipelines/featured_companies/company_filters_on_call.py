@@ -1,8 +1,8 @@
 """
-File: featured_company_filters.py
+File: company_filters_on_call.py
 Author: Drew Hill
-Used for the purpose of filtering companies based on industry, market capitalization, and profitability to determine the set of
-companies used in the modeling pipeline.
+Used for the purpose of filtering companies at point of api call based on industry, market capitalization, and
+profitability to determine the set of companies used in the modeling pipeline.
 """
 from typing import Any
 import datetime
@@ -98,7 +98,7 @@ def filter_by_public_age(ticker: yf.Ticker, pub_age: int) -> bool:
     except HTTPError:
         return False
 
-def company_filter(ticker: str,
+def filter_on_call(ticker: str,
                    by_industry: bool = False,
                    by_market_cap: bool = False,
                    by_profitability: bool = False,

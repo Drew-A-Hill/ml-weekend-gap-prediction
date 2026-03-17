@@ -7,11 +7,15 @@ import time
 from urllib.error import HTTPError
 import pandas as pd
 import yfinance as yf
+import utils.df_expansion as merge
+
 import data_pipelines.api_data_ingestion.fundamentals_data_retrieval as fd
 from yfinance.exceptions import YFRateLimitError
 import data_pipelines.api_data_ingestion.price_data_retrieval as price_data
 import data_pipelines.featured_companies.company_retrieval as featured
-import data_pipelines.featured_companies.featured_company_filters as filters
+import data_pipelines.featured_companies.company_filters_on_call as filters
+from data_io.read_write_data import read_from_csv
+from data_pipelines.featured_companies.company_retrieval import get_cik
 from utils.general import ticker_iter_w_progress
 
 def dev_featured_companies(
@@ -28,7 +32,7 @@ def dev_featured_companies(
 
     for ticker in ticker_iter_w_progress("Filtering Companies", featured.get_all_tickers().index):
         try:
-            if filters.company_filter(
+            if filters.filter_on_call(
                     ticker,
                     by_industry=by_industry,
                     by_market_cap=by_market_cap,
@@ -74,5 +78,21 @@ def dev_fundamental_data_by_ticker(df: pd.DataFrame, cik: int, ticker_str) -> pd
 
     except ValueError:
         pass
+
+    return df
+
+def dev_price_and_fundamental_data_by_ticker(companies: pd.DataFrame) -> pd.DataFrame:
+    """
+
+    """
+    p_df: pd.DataFrame = pd.DataFrame()
+    f_df: pd.DataFrame = pd.DataFrame()
+
+    for ticker_str in ticker_iter_w_progress("Collect Data", companies["featured_tickers"]):
+
+        p_df = dev_price_data_by_ticker(p_df, yf.Ticker(ticker_str))
+        f_df = dev_fundamental_data_by_ticker(f_df, get_cik(ticker_str), ticker_str)
+
+    df = merge.merge_df_columns([p_df, f_df])
 
     return df

@@ -34,3 +34,11 @@ def get_list_of_req_metrics(sig: dict[str, Any]) -> list[str]:
                 include_list.append(param)
 
     return include_list
+
+def pad_cik(cik: str) -> str:
+    """
+    Ensures that the provided CIK has a minimum of 10 characters by adding 0's to front of cik.
+    :param cik: unpadded CIK.
+    :returns: padded CIK
+    """
+    return cik.zfill(10)

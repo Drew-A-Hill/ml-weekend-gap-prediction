@@ -1,7 +1,7 @@
 """
-File: featured_companies_dev_script.py
+File: dev_data_set_script.py
 Author: Drew Hill
-This script is used to assemble the companies used for the model.
+This file runs the date set builder.
 """
 import sys
 
@@ -9,15 +9,11 @@ import pandas as pd
 from curl_cffi.requests.exceptions import RequestException
 
 import data_io.read_write_data as rw
-import data_pipelines.api_data_ingestion.data_developer as x
+from data_pipelines.api_data_ingestion.data_developer import dev_price_and_fundamental_data_by_ticker
 
-def main():
-    companies: pd.Series = x.dev_featured_companies(
-        by_industry=True,
-        by_public_age=True
-    )
-
-    rw.write_to_csv(companies, "featured_companies.csv")
+def  main():
+    companies: pd.DataFrame = rw.read_from_csv("featured_companies.csv")
+    print(dev_price_and_fundamental_data_by_ticker(companies))
 
 if __name__ == "__main__":
     try:

@@ -96,9 +96,10 @@ def add_indicators(data: pd.DataFrame, indicators: list[str] | None=None, add_al
     selected = set(indicators or [])
 
     for group_dict in _indicator_map().values():
-        for indicator_name, indicator_fn in group_dict.items():
+        for indicator_name, indicator_funct in group_dict.items():
             if add_all or indicator_name in selected:
-                result = indicator_fn(df)
+
+                result = indicator_funct(df)
 
                 if isinstance(result, pd.Series):
                     df[indicator_name] = result

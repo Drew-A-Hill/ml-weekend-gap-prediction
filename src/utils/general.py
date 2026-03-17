@@ -99,7 +99,6 @@ def ticker_iter_w_progress(desc : str, tickers: pd.Series) -> Generator[str, Non
 
             next_pause = next_pause_count(count)
 
-
             message: str = f"Next pause in: {next_pause} calls"
 
             line_ticker.set_description_str(f"Ticker: {ticker}")
@@ -118,7 +117,7 @@ def ticker_iter_w_progress(desc : str, tickers: pd.Series) -> Generator[str, Non
 
             if count % 500 == 0 and count < total:
                 sleep_secs = random.randint(30, 120)
-                message = f"Call Count {count}: Sleeping {sleep_secs}s"
+                message = f"Call Count {count}:  {sleep_secs}s"
 
                 line_message.set_description_str(f"Message: {message}")
                 line_message.refresh()
@@ -127,7 +126,6 @@ def ticker_iter_w_progress(desc : str, tickers: pd.Series) -> Generator[str, Non
                     time.sleep(sleep_secs)
                 else:
                     time.sleep(sleep_secs * 2)
-
 
                 line_message.set_description_str("Message:")
                 line_message.refresh()

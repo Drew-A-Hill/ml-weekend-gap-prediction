@@ -47,7 +47,7 @@ def get_all_cik() ->pd.Series:
     """
     return pd.Series(get_all_companies()["cik"])
 
-def get_cik(ticker) -> str:
+def get_cik(ticker: str) -> int:
     """
     Gets the CIK' for a company registered with the SEC.
     :param ticker: Company ticker.

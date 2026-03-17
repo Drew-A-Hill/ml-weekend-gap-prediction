@@ -23,4 +23,5 @@ builds.
 ```bash
     ./run_script.sh
 ```
-3. To exit run just press CTRL + C
+3. Follow the prompt to select a script to run
+4. To exit run just press CTRL + C

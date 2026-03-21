@@ -5,7 +5,8 @@ This file is used to find a list of companies that satisfy requirements needed t
 """
 import pandas as pd
 
-from utils.pipline_helpers import get_response
+from data_pipelines.api_clients.sec_client import get_response
+
 _ALL_COMPANIES_DF: pd.DataFrame | None = None
 
 def _get_all_company_data_response() -> dict[str, dict[str, str]]:

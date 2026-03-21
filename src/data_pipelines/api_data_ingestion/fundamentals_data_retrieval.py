@@ -7,7 +7,8 @@ from typing import Any
 import pandas as pd
 import config
 from config import FUNDAMENTAL_METRICS
-from utils.pipline_helpers import get_response
+from data_pipelines.api_clients.sec_client import get_response
+
 
 def _filter_by_year(df: pd.DataFrame, num_years: int) -> pd.DataFrame | None:
     """

@@ -3,54 +3,63 @@ File: data_developer.py
 Author: Drew Hill
 This file is used to develop the data set to be used for the model.
 """
-import time
-from urllib.error import HTTPError
+from typing import Any
 import pandas as pd
 import yfinance as yf
+
+import data_io.read_write_data as rw
 import utils.df_expansion as merge
 
 import data_pipelines.api_data_ingestion.fundamentals_data_retrieval as fd
-from yfinance.exceptions import YFRateLimitError
 import data_pipelines.api_data_ingestion.price_data_retrieval as price_data
 import data_pipelines.featured_companies.company_retrieval as featured
 import data_pipelines.featured_companies.company_filters_on_call as filters
-from data_io.read_write_data import read_from_csv
+import data_pipelines.featured_companies.collect_company_data as collect
 from data_pipelines.featured_companies.company_retrieval import get_cik
 from utils.terminal_run_status import ticker_iter_w_progress
 
-def dev_featured_companies(
-        by_industry: bool = False,
-        by_market_cap: bool = False,
-        by_profitability: bool = False,
-        by_public_age: bool = False
-) -> pd.Series:
+def collect_companies_meta_data() -> pd.DataFrame:
     """
-    Develops the companies to be used in the model based on the criteria.
-    return: panda series that contains a tuple for each company with ticker object, cik, and ticker_str.
+
+    :return:
     """
-    featured_companies: list[str] = []
+    featured_companies: list[dict[str, Any]] = []
 
-    for ticker in ticker_iter_w_progress("Filtering Companies", featured.get_all_tickers().index):
-        try:
-            if filters.filter_on_call(
-                    ticker,
-                    by_industry=by_industry,
-                    by_market_cap=by_market_cap,
-                    by_profitability=by_profitability,
-                    by_public_age=by_public_age,
-            ):
-                featured_companies.append(ticker)
+    for ticker in ticker_iter_w_progress("Collecting Company Data", featured.get_all_tickers().index):
+        featured_companies.append(collect.collect_filter_criteria_data(ticker))
 
-        except YFRateLimitError:
-            time.sleep(300)
+    return pd.DataFrame(
+        featured_companies,
+        columns=["Ticker", "Exchange", "Sector", "Industry", "MarketCap", "ProfitMargin", "TradingAge"]
+    )
 
-        except HTTPError:
-            continue
+# def dev_featured_companies(
+#         by_industry: bool = True,
+#         by_market_cap: bool = True,
+#         by_profitability: bool = True,
+#         by_public_age: bool = True
+# ) -> pd.Series:
+#     """
+#     Develops the companies to be used in the model based on the criteria.
+#     return: panda series that contains a tuple for each company with ticker object, cik, and ticker_str.
+#     """
+#     featured_companies: list[str] = []
+#
+#     for ticker in ticker_iter_w_progress("Filtering Companies", featured.get_all_tickers().index):
+#         if filters.filter_on_call(
+#                 ticker,
+#                 by_industry=by_industry,
+#                 by_market_cap=by_market_cap,
+#                 by_profitability=by_profitability,
+#                 by_public_age=by_public_age,
+#         ):
+#             featured_companies.append(ticker)
+#
+#     print(featured_companies)
 
-        except KeyboardInterrupt:
-            raise
 
-    return pd.Series(featured_companies, name="featured_tickers")
+    # rw.write_to_csv(pd.Series(featured_companies, name="featured_tickers"), "featured_companies.csv")
+    # return pd.Series(featured_companies, name="featured_tickers")
 
 def dev_price_data_by_ticker(df: pd.DataFrame, ticker: yf.Ticker) -> pd.DataFrame:
     """

@@ -7,18 +7,6 @@ from typing import Any
 import requests
 import config
 
-def get_response(url: str) -> dict[str, dict[str, str]]:
-    """
-    Send an HTTP GET request to the provided URL and returns a parsed JSON.
-    :param url: url used to retrieve desired data.
-    :return: returns a parsed JSON.
-    """
-    try:
-        return requests.get(url=url, headers=config.HEADER).json()
-
-    except requests.exceptions.RequestException as e:
-        raise ValueError(e)
-
 def get_list_of_req_metrics(sig: dict[str, Any]) -> list[str]:
     """
     Helper method for that retrieves the list of required metrics for a ticker as marked in the parameters of the

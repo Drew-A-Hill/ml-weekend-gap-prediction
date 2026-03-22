@@ -59,7 +59,7 @@ def get_fast_info(ticker: str) -> dict[str, dict[str, str]] | None:
 
     return None
 
-def get_history(ticker: str, period: str, interval: str = None) -> pd.DataFrame | None:
+def get_price_history(ticker: str, period: str, interval: str = None) -> pd.DataFrame | None:
     """
 
     :return:

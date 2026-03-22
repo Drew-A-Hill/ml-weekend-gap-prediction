@@ -5,15 +5,15 @@ This file is used to run the desired scripts with exit handling.
 """
 from collections.abc import Callable
 
-import scripts.build_featured_companies_list_script as fc
-import scripts.build_data_set_script as ds
-import data_pipelines.featured_companies.collect_company_data as collect
+import scripts.build_filtered_company_list_script as fc
+import scripts.build_dataset_script as ds
+import scripts.collect_metadata_script as md
 
 from utils.exception_handler import run_with_exit_handling
 
 SCRIPT_MAP: dict[str, Callable[[], None]] = {
-    "collect_all_company_data": collect.collect_filter_criteria_data,
-    "build_list_of_companies": fc.build_featured_companies_list,
+    "collect_company_metadata": md.collect_companies_meta_data,
+    "build_list_of_companies": fc.build_filtered_list,
     "dev_data_set": ds.dev_data_set
 }
 

@@ -1,5 +1,5 @@
 """
-File: company_filters_on_call.py
+File: filter_companies_on_call.py
 Author: Drew Hill
 Used for the purpose of filtering companies at point of api call based on industry, market capitalization, and
 profitability to determine the set of companies used in the modeling pipeline.
@@ -7,7 +7,6 @@ profitability to determine the set of companies used in the modeling pipeline.
 from typing import Any
 import datetime
 import pandas as pd
-import yfinance as yf
 import config
 import data_pipelines.api_clients.yahoo_client as yf_client
 
@@ -80,7 +79,7 @@ def filter_by_public_age(ticker: str, pub_age: int) -> bool:
     :param pub_age: Number of years the company being evaluated has been publicly traded.
     :return: True if the company has been publicly traded for specified number of years, False otherwise.
     """
-    history: pd.DataFrame = yf_client.get_history(ticker, period="max")
+    history: pd.DataFrame = yf_client.get_price_history(ticker, period="max")
 
     if history.empty:
         return False

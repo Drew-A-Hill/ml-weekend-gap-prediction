@@ -1,5 +1,5 @@
 """
-File: company_retrieval.py
+File: registered_companies.py
 Author: Drew Hill
 This file is used to find a list of companies that satisfy requirements needed to extract features for the model.
 """

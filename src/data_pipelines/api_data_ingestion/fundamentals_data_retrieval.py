@@ -91,7 +91,6 @@ def _clean_metric(data: list[dict[str, Any]], years: int) -> list[dict[str, Any]
 
     return df.to_dict("records")
 
-
 def build_single_ticker_fundamentals_df(cik: int, ticker: str, years: int) -> pd.DataFrame:
     """
     Pull filters and returns data for selected fundamentals from SEC for a desired company.

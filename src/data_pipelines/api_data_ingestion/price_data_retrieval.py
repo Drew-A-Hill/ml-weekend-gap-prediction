@@ -7,19 +7,10 @@ import pandas as pd
 import yfinance as yf
 import config
 import utils.pipline_helpers as helpers
-
-def get_price_history_by_ticker(ticker: yf.Ticker) -> pd.DataFrame:
-    """
-    Retrieves price details for a given ticker. This data includes Open, High, Low, Close and Volume.
-    :param ticker: ticker object for data to be retrieved and included.
-    :return: pd.DataFrame
-    """
-    data: pd.DataFrame = ticker.history(period=config.PERIOD, interval=config.INTERVAL)
-
-    return data
+from data_pipelines.api_clients.yahoo_client import get_price_history
 
 def build_single_ticker_price_df(
-        ticker: yf.Ticker,
+        ticker_str: str,
         open_p: bool = False,
         close_p: bool = False,
         high_p: bool = False,
@@ -31,7 +22,7 @@ def build_single_ticker_price_df(
     """
     Builds a dataframe containing only the required metrics for a ticker. IF NO METRICS ARE MARKED TRUE THEN RETRIEVES
     DATA FOR ALL METRICS.
-    :param ticker: ticker object for data to be retrieved and included.
+    :param ticker_str: ticker symbol for data to be retrieved and included.
     :param open_p: Opening price metric.
     :param close_p: Closing price metric.
     :param high_p: High price metric.
@@ -41,11 +32,11 @@ def build_single_ticker_price_df(
     :param stock_splits: Stock splits metric.
     :return: pd.DataFrame
     """
-    price_data: pd.DataFrame = get_price_history_by_ticker(ticker)
+    price_data: pd.DataFrame = get_price_history(ticker_str, period=config.PERIOD, interval=config.INTERVAL)
     include_list: list[str] = helpers.get_list_of_req_metrics(locals())
 
     df: pd.DataFrame = pd.DataFrame()
-
+    ticker: yf.Ticker = yf.Ticker(ticker_str)
 
     df["Ticker"] = ticker.ticker
     df["Year"] = price_data.index.year

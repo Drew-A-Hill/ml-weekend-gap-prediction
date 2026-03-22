@@ -53,7 +53,7 @@ def get_trading_age(ticker: str) -> int:
 
     :return:
     """
-    history: pd.DataFrame = yf_client.get_history(ticker, period="max")
+    history: pd.DataFrame = yf_client.get_price_history(ticker, period="max")
 
     if history is None:
         return 0

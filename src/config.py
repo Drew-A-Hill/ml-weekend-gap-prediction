@@ -15,8 +15,8 @@ INTERVAL: str = "1d"
 
 MIN_CAP: int = 10_000_000_000
 MAX_CAP: int = 200_000_000_000
-MIN_PROFIT_MARGIN: float = 0.10
-MIN_PUBLIC_AGE: int = 15
+MIN_PROFIT_MARGIN: float = 0.0001
+MIN_PUBLIC_AGE: int = 12
 
 EXCHANGE: list[str] = [
     "NMS",
@@ -29,10 +29,11 @@ SECTORS: list[str] = [
 ]
 
 INDUSTRIES: list[str] = [
-    "Semiconductors",
-    "Software",
-    "Consumer Electronics",
-    "Semiconductor Equipment"
+    # "Semiconductors",
+    "Software - Application",
+    "Software - Infrastructure",
+    # "Consumer Electronics",
+    # "Computer Hardware",
 ]
 
 FINANCIAL_METRICS: dict[str, str] = {

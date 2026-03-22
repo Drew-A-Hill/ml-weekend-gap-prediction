@@ -140,7 +140,7 @@ def build_single_ticker_fundamentals_df(cik: int, ticker: str, years: int) -> pd
             metric_frames.append(df)
 
     if not metric_frames:
-        return pd.DataFrame()
+        return pd.DataFrame(columns=["Ticker", "Year", "Quarter"])
 
     # Merge all metrics together
     df_final = metric_frames[0]

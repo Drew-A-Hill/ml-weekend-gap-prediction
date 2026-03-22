@@ -20,16 +20,20 @@ def dev_data_set() -> None:
 
     df: pd.DataFrame = pd.DataFrame()
 
-    for ticker in status.ticker_iter_w_progress("Building Dataset", tickers.index):
+    for ticker in status.ticker_iter_w_progress("Building Dataset", tickers):
+        price: pd.DataFrame = price_data.build_single_ticker_price_df(
+            str(ticker),
+            open_p=True,
+            high_p=True,
+            low_p=True,
+            close_p=True,
+            volume=True,
+        )
 
-        price: pd.DataFrame = price_data.build_single_ticker_price_df(ticker)
         fundamental: pd.DataFrame = fun.build_single_ticker_fundamentals_df(get_cik(ticker), ticker, 10)
 
         data: pd.DataFrame = ddev.dev_dataset_by_ticker(price=price, fundamental=fundamental)
 
-        df = df.concat([df, data])
+        df = pd.concat([df, data], ignore_index=True)
 
     rw.write_to_csv(df, "dataset.csv")
-
-
-

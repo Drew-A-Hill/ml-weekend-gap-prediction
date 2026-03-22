@@ -32,20 +32,27 @@ def build_single_ticker_price_df(
     :param stock_splits: Stock splits metric.
     :return: pd.DataFrame
     """
-    price_data: pd.DataFrame = get_price_history(ticker_str, period=config.PERIOD, interval=config.INTERVAL)
-    include_list: list[str] = helpers.get_list_of_req_metrics(locals())
+    price_data: pd.DataFrame = get_price_history(
+        ticker_str,
+        period=config.PERIOD,
+        interval=config.INTERVAL
+    ).copy()
 
-    df: pd.DataFrame = pd.DataFrame()
+    price_data.index = pd.to_datetime(price_data.index)
+
+    include_list: list[str] = helpers.get_list_of_req_metrics(locals())
     ticker: yf.Ticker = yf.Ticker(ticker_str)
 
-    df["Ticker"] = ticker.ticker
+    df: pd.DataFrame = pd.DataFrame()
+
     df["Year"] = price_data.index.year
     df["Quarter"] = price_data.index.quarter.map(lambda q: f"Q{q}")
     df["Date"] = price_data.index
 
-    df.set_index("Ticker", inplace=True)
-
     for metric in include_list:
-        df[config.FINANCIAL_METRICS[metric]] = price_data.get(config.FINANCIAL_METRICS.get(metric))
+        df["Ticker"] = ticker.ticker
+        df[config.FINANCIAL_METRICS[metric]] = price_data[
+            config.FINANCIAL_METRICS[metric]
+        ].values
 
     return df

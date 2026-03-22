@@ -27,3 +27,4 @@ def run_with_exit_handling(main: Callable[[], None]) -> None:
     except Exception as e:
         print("Unexpected error: {e}".format(e=e))
         # sys.exit(0)
+        raise

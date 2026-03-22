@@ -66,25 +66,19 @@ def dev_dataset_by_ticker(
     """
     df: pd.DataFrame = pd.DataFrame()
 
-    if price is not None:
+    if price is not None and not price.empty:
+        df = price.copy()
+
+    if fundamental is not None and not fundamental.empty:
         if df.empty:
-            df = price
-
+            df = fundamental.copy()
         else:
-            pd.merge(df, price, on="Ticker")
+            df = pd.merge(df, fundamental, on=["Ticker", "Year", "Quarter"], how="outer")
 
-    if fundamental is not None:
+    if indicators is not None and not indicators.empty:
         if df.empty:
-            df = fundamental
+            df = indicators.copy()
         else:
-            pd.merge(df, fundamental, on="Ticker")
-
-    if indicators is not None:
-        if df.empty:
-            df = indicators
-
-        else:
-            pd.merge(df, indicators, on="Ticker")
+            df = pd.merge(df, indicators, on=["Ticker", "Year", "Quarter"], how="outer")
 
     return df
-

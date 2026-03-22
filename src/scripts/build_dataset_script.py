@@ -1,7 +1,7 @@
 """
 File: build_dataset_script.py
 Author: Drew Hill
-This file runs the date set builder.
+This file is a script that is used to build a complete dataset.
 """
 import pandas as pd
 

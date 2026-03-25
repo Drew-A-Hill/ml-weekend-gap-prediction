@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# OS / editor
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Project-generated visualization outputs
+structured_csv_data_files/feature_selection_viz/
+

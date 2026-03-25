@@ -15,7 +15,7 @@ def close_v_ema50(df: pd.DataFrame) -> pd.DataFrame:
     :returns: The input dataframe with a close_v_ema50 column added.
     """
     ema50 = ic.ema_50(df).replace(0, np.nan)
-    df["close_v_ema50"] = (df["Close"] / ema50) - 1
+    df["CloseVEma50"] = (df["Close"] / ema50) - 1
 
     return df
 
@@ -26,7 +26,7 @@ def close_v_sma20(df: pd.DataFrame) -> pd.DataFrame:
     :returns: The input dataframe with a close_v_sma20 column added.
     """
     sma20 = ic.sma_20(df).replace(0, np.nan)
-    df["close_v_sma20"] = (df["Close"] / sma20) - 1
+    df["CloseVSma20"] = (df["Close"] / sma20) - 1
 
     return df
 
@@ -55,6 +55,6 @@ def adx(df: pd.DataFrame, window: int = 14) -> pd.DataFrame:
     di_sum = (plus_di + minus_di).replace(0, np.nan)
     dx = ((plus_di - minus_di).abs() / di_sum) * 100
 
-    df["adx"] = dx.groupby(df["Ticker"]).transform(lambda s: s.rolling(window).mean())
+    df["ADX"] = dx.groupby(df["Ticker"]).transform(lambda s: s.rolling(window).mean())
 
     return df

@@ -19,11 +19,11 @@ def obv(df: pd.DataFrame) -> pd.DataFrame:
         np.where(price_diff > 0, df["Volume"], np.where(price_diff < 0, -df["Volume"], 0)),
         index=df.index,
     )
-    df["obv"] = signed_volume.groupby(df["Ticker"]).cumsum()
+    df["OBV"] = signed_volume.groupby(df["Ticker"]).cumsum()
 
     return df
 
-def mfi(df: pd.DataFrame, window: int = 14) -> pd.DataFrame:
+def mfi(df: pd.DataFrame) -> pd.DataFrame:
     """
     Calculates Money Flow Index for each ticker.
     :param df: The dataframe that contains all the price data.
@@ -37,12 +37,12 @@ def mfi(df: pd.DataFrame, window: int = 14) -> pd.DataFrame:
     positive_flow = pd.Series(np.where(tp_change > 0, rmf, 0.0), index=df.index)
     negative_flow = pd.Series(np.where(tp_change < 0, rmf, 0.0), index=df.index)
 
-    pos_sum = positive_flow.groupby(df["Ticker"]).transform(lambda s: s.rolling(window).sum())
+    pos_sum = positive_flow.groupby(df["Ticker"]).transform(lambda s: s.rolling(5).sum())
     neg_sum = negative_flow.groupby(df["Ticker"]).transform(
-        lambda s: s.rolling(window).sum()).replace(0, np.nan)
+        lambda s: s.rolling(5).sum()).replace(0, np.nan)
 
     money_ratio = pos_sum / neg_sum
-    df["mfi"] = 100 - (100 / (1 + money_ratio))
+    df["MFI"] = 100 - (100 / (1 + money_ratio))
 
     return df
 
@@ -57,6 +57,6 @@ def volume_ratio(df: pd.DataFrame) -> pd.DataFrame:
         [df["Ticker"], df["Date"].dt.to_period("W-FRI")]).transform("mean").replace(0, np.nan)
 
     fri_vol = ic.friday_volume(df)
-    df["volume_ratio"] = fri_vol / mon_thu_avg
+    df["VolumeRatio"] = fri_vol / mon_thu_avg
 
     return df

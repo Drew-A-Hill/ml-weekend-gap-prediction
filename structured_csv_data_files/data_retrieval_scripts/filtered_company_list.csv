@@ -1,0 +1,27 @@
+Ticker,Exchange,Sector,Industry,MarketCap,ProfitMargin,TradingAge
+CRM,NYQ,Technology,Software - Application,183071064064.0,0.17958,22
+PANW,NMS,Technology,Software - Infrastructure,132967194624.0,0.12956999,14
+INTU,NMS,Technology,Software - Application,126770536448.0,0.2157,33
+NOW,NYQ,Technology,Software - Application,116466679808.0,0.13165,14
+ADBE,NMS,Technology,Software - Application,101865570304.0,0.29477,40
+ADP,NMS,Technology,Software - Application,84404404224.0,0.19964,46
+SNPS,NMS,Technology,Software - Infrastructure,80517357568.0,0.13756,34
+CDNS,NMS,Technology,Software - Application,78321049600.0,0.20934999,39
+FTNT,NMS,Technology,Software - Infrastructure,60532957184.0,0.27257,17
+ADSK,NMS,Technology,Software - Application,52573880320.0,0.15597999,41
+ROP,NMS,Technology,Software - Application,38069207040.0,0.19441,34
+WDAY,NMS,Technology,Software - Application,35757481984.0,0.07255,14
+PAYX,NMS,Technology,Software - Application,33222438912.0,0.26446,43
+FICO,NYQ,Technology,Software - Application,26749552640.0,0.31886998,39
+VRSN,NMS,Technology,Software - Infrastructure,22320306176.0,0.49842998,28
+NTAP,NMS,Technology,Software - Infrastructure,20025882624.0,0.18065001,31
+CPAY,NYQ,Technology,Software - Infrastructure,20110141440.0,0.23625,16
+PTC,NMS,Technology,Software - Application,17826807808.0,0.28612,37
+SSNC,NMS,Technology,Software - Application,17418676224.0,0.12705,16
+CHKP,NMS,Technology,Software - Infrastructure,16396285952.0,0.38779998,30
+FFIV,NMS,Technology,Software - Infrastructure,16150257664.0,0.22455,27
+AKAM,NMS,Technology,Software - Infrastructure,16007238656.0,0.10742,27
+TYL,NYQ,Technology,Software - Application,15053466624.0,0.13532,46
+HUBS,NYQ,Technology,Software - Application,13649777664.0,0.01466,12
+GWRE,NYQ,Technology,Software - Application,13229834240.0,0.14112,14
+GEN,NMS,Technology,Software - Infrastructure,12932536320.0,0.12757,37

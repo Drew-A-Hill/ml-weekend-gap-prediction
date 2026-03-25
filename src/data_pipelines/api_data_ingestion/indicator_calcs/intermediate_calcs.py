@@ -250,4 +250,4 @@ def prev_quarter_revenue(df: pd.DataFrame) -> pd.Series:
     :param df: The dataframe that contains all the price data.
     :returns: A pandas Series containing the previous quarter revenue for each ticker.
     """
-    return df.groupby("Ticker")["Revenues"].transform(lambda s: s.shift(1))
+    return df.groupby(["Ticker", "Year", "Quarter"])["Revenues"].transform(lambda s: s.shift(1))

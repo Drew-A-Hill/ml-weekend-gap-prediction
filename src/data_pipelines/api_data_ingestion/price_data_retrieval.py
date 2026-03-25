@@ -1,7 +1,12 @@
 """
 File: price_data_retrieval.py
 Author: Drew Hill
-This file is used for assembling all the needed price data for feature selection.
+
+This file builds a dataframe containing the indicated price data for a given ticker.
+
+Usage:
+    get_price_data(open_p=True, close_p=True, high_p=True, low_p=True, volume=True)
+    get_price_data(open_p=False, close_p=False, high_p=False)
 """
 import pandas as pd
 import yfinance as yf
@@ -9,7 +14,7 @@ import config
 import utils.pipline_helpers as helpers
 from data_pipelines.api_clients.yahoo_client import get_price_history
 
-def build_single_ticker_price_df(
+def get_price_data(
         ticker_str: str,
         open_p: bool = False,
         close_p: bool = False,

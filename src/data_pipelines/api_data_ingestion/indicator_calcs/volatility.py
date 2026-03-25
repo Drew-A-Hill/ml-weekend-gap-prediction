@@ -21,18 +21,18 @@ def bollinger_band_width(df: pd.DataFrame, window: int = 20) -> pd.DataFrame:
     ub = ic.upper_band(df, window)
     lb = ic.lower_band(df, window)
     denom = sma_n.replace(0, np.nan)
-    df["bollinger_band_width"] = (ub - lb) / denom
+    df["BollingerBandWidth"] = (ub - lb) / denom
 
     return df
 
-def atr(df: pd.DataFrame, window: int = 14) -> pd.DataFrame:
+def atr(df: pd.DataFrame) -> pd.DataFrame:
     """
     Calculates Average True Range for each ticker over the specified window.
     :param df: The dataframe that contains all the price data.
     :param window: The window that will be used to calculate the atr.
     :returns: The input dataframe with an atr column added.
     """
-    df["atr"] = ic.tr(df).groupby(df["Ticker"]).transform(lambda s: s.rolling(window).mean())
+    df["ATR"] = ic.tr(df).groupby(df["Ticker"]).transform(lambda s: s.rolling(14).mean())
 
     return df
 
@@ -43,6 +43,6 @@ def five_d_std_dev(df: pd.DataFrame) -> pd.DataFrame:
     :returns: The input dataframe with a five_d_std_dev column added.
     """
     dr = ic.daily_returns(df)
-    df["five_d_std_dev"] = dr.groupby(df["Ticker"]).transform(lambda s: s.rolling(5).std())
+    df["FiveDStdDev"] = dr.groupby(df["Ticker"]).transform(lambda s: s.rolling(5).std())
 
     return df

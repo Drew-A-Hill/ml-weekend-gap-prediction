@@ -15,35 +15,6 @@ import data_pipelines.api_data_ingestion.indicator_calcs.fundamental as fi
 
 def _indicator_map() -> dict[str, dict[str, Any]]:
     return {
-        "intermediate_price": {
-            "daily_return": ic.daily_returns,
-            "monday_open": ic.monday_open,
-            "friday_open": ic.friday_open,
-            "friday_close": ic.friday_close,
-            # "friday_volume": ic.friday_volume,
-            "weekly_high": ic.weekly_high,
-            "weekly_low": ic.weekly_low,
-            "weekly_avg_volume": ic.weekly_avg_volume,
-            "prev_friday_close": ic.prev_friday_close,
-            "price_change": ic.price_change,
-            "gain": ic.gain,
-            "loss": ic.loss,
-            "avg_gain": ic.avg_gain,
-            "avg_loss": ic.avg_loss,
-            "ema_12": ic.ema_12,
-            "ema_26": ic.ema_26,
-            "ema_50": ic.ema_50,
-            "sma_20": ic.sma_20,
-            "rolling_std_n": ic.rolling_std_n,
-            "upper_band": ic.upper_band,
-            "lower_band": ic.lower_band,
-            "prev_close": ic.prev_close,
-            "tr": ic.tr,
-            "typical_price": ic.typical_price,
-            "raw_money_flow": ic.raw_money_flow,
-            "prev_quarter_revenue": ic.prev_quarter_revenue,
-        },
-
         "price_aggregates": {
             "weekly_return": pa.weekly_return,
             "intra_week_volatility": pa.intra_week_volatility,

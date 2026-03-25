@@ -30,7 +30,7 @@ def close_v_sma20(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
-def adx(df: pd.DataFrame, window: int = 14) -> pd.DataFrame:
+def adx(df: pd.DataFrame) -> pd.DataFrame:
     """
     Calculates the Average Directional Index for each ticker.
     :param df: The dataframe that contains all the price data.
@@ -47,14 +47,14 @@ def adx(df: pd.DataFrame, window: int = 14) -> pd.DataFrame:
     minus_dm = pd.Series(np.where((down_move > up_move) & (down_move > 0), down_move, 0.0),index=df.index,)
 
     tr_vals = ic.tr(df)
-    atr_vals = tr_vals.groupby(df["Ticker"]).transform(lambda s: s.rolling(window).mean()).replace(0, np.nan)
+    atr_vals = tr_vals.groupby(df["Ticker"]).transform(lambda s: s.rolling(5).mean()).replace(0, np.nan)
 
-    plus_di = 100 * plus_dm.groupby(df["Ticker"]).transform(lambda s: s.rolling(window).mean()) / atr_vals
-    minus_di = 100 * minus_dm.groupby(df["Ticker"]).transform(lambda s: s.rolling(window).mean()) / atr_vals
+    plus_di = 100 * plus_dm.groupby(df["Ticker"]).transform(lambda s: s.rolling(5).mean()) / atr_vals
+    minus_di = 100 * minus_dm.groupby(df["Ticker"]).transform(lambda s: s.rolling(5).mean()) / atr_vals
 
     di_sum = (plus_di + minus_di).replace(0, np.nan)
     dx = ((plus_di - minus_di).abs() / di_sum) * 100
 
-    df["ADX"] = dx.groupby(df["Ticker"]).transform(lambda s: s.rolling(window).mean())
+    df["ADX"] = dx.groupby(df["Ticker"]).transform(lambda s: s.rolling(5).mean())
 
     return df

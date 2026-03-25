@@ -14,7 +14,7 @@ from utils.terminal_run_status import ticker_iter_w_progress
 
 
 def dev_data_set() -> None:
-    data = read_from_csv("filtered_company_list.csv")
+    data = read_from_csv("./fetched_data/filtered_company_list.csv")
     df = pd.DataFrame()
     pdf = pd.DataFrame()
 
@@ -29,4 +29,4 @@ def dev_data_set() -> None:
     time.sleep(15)
     df = add_indicators(df, add_all=True)
 
-    write_to_csv(df, "dataset.csv")
+    write_to_csv(df, "./fetched_data/dataset.csv")

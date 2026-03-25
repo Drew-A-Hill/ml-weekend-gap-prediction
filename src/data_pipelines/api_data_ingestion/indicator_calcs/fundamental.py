@@ -6,6 +6,11 @@ This file is used for calculating fundamental indicators.
 import numpy as np
 import pandas as pd
 import data_pipelines.api_data_ingestion.indicator_calcs.intermediate_calcs as ic
+def get_revenues(df: pd.DataFrame) -> pd.DataFrame:
+    """
+
+    """
+    return df["Revenues"].replace(0, np.nan)
 
 def gross_margin(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -13,21 +18,21 @@ def gross_margin(df: pd.DataFrame) -> pd.DataFrame:
     :param df: The dataframe that contains all the fundamental data.
     :returns: The input dataframe with a gross_margin column added.
     """
-    denom = df["Revenue"].replace(0, np.nan)
-    df["gross_margin"] = df["GrossProfit"] / denom
+    rev: pd.DataFrame = get_revenues(df)
+    df["GrossMargin"] = round((df["GrossProfit"] / rev), 3)
 
     return df
-
-def operating_margin(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Calculates operating margin as operating income relative to revenue.
-    :param df: The dataframe that contains all the fundamental data.
-    :returns: The input dataframe with an operating_margin column added.
-    """
-    denom = df["Revenue"].replace(0, np.nan)
-    df["operating_margin"] = df["OperatingIncome"] / denom
-
-    return df
+#
+# def operating_margin(df: pd.DataFrame) -> pd.DataFrame:
+#     """
+#     Calculates operating margin as operating income relative to revenue.
+#     :param df: The dataframe that contains all the fundamental data.
+#     :returns: The input dataframe with an operating_margin column added.
+#     """
+#     rev: pd.DataFrame = get_revenues(df)
+#     df["OperatingMargin"] = df.get("OperatingIncome") / rev
+#
+#     return df
 
 def net_margin(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -35,21 +40,21 @@ def net_margin(df: pd.DataFrame) -> pd.DataFrame:
     :param df: The dataframe that contains all the fundamental data.
     :returns: The input dataframe with a net_margin column added.
     """
-    denom = df["Revenue"].replace(0, np.nan)
-    df["net_margin"] = df["NetIncome"] / denom
+    rev: pd.DataFrame = get_revenues(df)
+    df["NetMargin"] = round((df["NetIncome"] / rev), 3)
 
     return df
 
-def debt_to_equity_ratio(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Calculates debt to equity ratio for each ticker.
-    :param df: The dataframe that contains all the fundamental data.
-    :returns: The input dataframe with a debt_to_equity_ratio column added.
-    """
-    denom = df["ShareholdersEquity"].replace(0, np.nan)
-    df["debt_to_equity_ratio"] = df["TotalDebt"] / denom
-
-    return df
+# def debt_to_equity_ratio(df: pd.DataFrame) -> pd.DataFrame:
+#     """
+#     Calculates debt to equity ratio for each ticker.
+#     :param df: The dataframe that contains all the fundamental data.
+#     :returns: The input dataframe with a debt_to_equity_ratio column added.
+#     """
+#     equity = df["Equity"].replace(np.nan, 0)
+#     df["DebtToEquityRatio"] = df.get("TotalDebt") / equity
+#
+#     return df
 
 def roa(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -57,8 +62,8 @@ def roa(df: pd.DataFrame) -> pd.DataFrame:
     :param df: The dataframe that contains all the fundamental data.
     :returns: The input dataframe with a roa column added.
     """
-    denom = df["TotalAssets"].replace(0, np.nan)
-    df["roa"] = df["NetIncome"] / denom
+    asset = df["Assets"].replace(0, np.nan)
+    df["RoA"] = round((df.get("NetIncome") / asset), 3)
 
     return df
 
@@ -69,6 +74,7 @@ def rev_growth_qoq(df: pd.DataFrame) -> pd.DataFrame:
     :returns: The input dataframe with a rev_growth_qoq column added.
     """
     prev_rev = ic.prev_quarter_revenue(df).replace(0, np.nan)
-    df["rev_growth_qoq"] = (df["Revenue"] / prev_rev) - 1
+
+    df["RevGrowthQoQ"] = ((get_revenues(df) / prev_rev) - 1)
 
     return df

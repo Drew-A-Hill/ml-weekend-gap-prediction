@@ -54,7 +54,7 @@ def volume_ratio(df: pd.DataFrame) -> pd.DataFrame:
     """
     mon_thu_vol = df["Volume"].where(df["Date"].dt.weekday < 4)
     mon_thu_avg = mon_thu_vol.groupby(
-        [df["Ticker"], df["Date"].dt.to_period("W")]).transform("mean").replace(0, np.nan)
+        [df["Ticker"], df["Date"].dt.to_period("W-FRI")]).transform("mean").replace(0, np.nan)
 
     fri_vol = ic.friday_volume(df)
     df["volume_ratio"] = fri_vol / mon_thu_avg

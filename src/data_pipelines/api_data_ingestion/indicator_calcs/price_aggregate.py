@@ -25,7 +25,7 @@ def intra_week_volatility(df: pd.DataFrame) -> pd.DataFrame:
     :returns: The input dataframe with an intra_week_volatility column added.
     """
     df["intra_week_volatility"] = ic.daily_returns(df).groupby(
-        [df["Ticker"], df["Date"].dt.to_period("W")]).transform("std")
+        [df["Ticker"], df["Date"].dt.to_period("W-FRI")]).transform("std")
 
     return df
 

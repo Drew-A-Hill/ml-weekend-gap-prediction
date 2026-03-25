@@ -29,11 +29,8 @@ SECTORS: list[str] = [
 ]
 
 INDUSTRIES: list[str] = [
-    # "Semiconductors",
     "Software - Application",
-    "Software - Infrastructure",
-    # "Consumer Electronics",
-    # "Computer Hardware",
+    "Software - Infrastructure"
 ]
 
 FINANCIAL_METRICS: dict[str, str] = {
@@ -46,145 +43,53 @@ FINANCIAL_METRICS: dict[str, str] = {
     "stock_splits": "Stock Splits"
 }
 
-YEARS: list[str] = [
-    "2026",
-    "2025",
-    "2024",
-    "2023",
-    "2022",
-    "2021",
-    "2019",
-    "2018",
-    "2017",
-    "2016"
-]
 
-QUARTERS: list[str] = [
-    "Q1",
-    "Q2",
-    "Q3",
-    "Q4"
-]
+# Fundamental Metrics
+ANNUAL_FORMS    = {"10-K", "10-K405", "10-KT"}
+QUARTERLY_FORMS = {"10-Q", "10-QSB"}
+VALID_FP        = {"FY", "Q1", "Q2", "Q3", "Q4"}
+
+SINGLE_Q_MIN = 78
+SINGLE_Q_MAX = 105
 
 FUNDAMENTAL_METRICS = {
-
-    "income_statement": {
-        "revenue": [
-            # "RevenueFromContractWithCustomerExcludingAssessedTax",
-            "Revenues"
-        ],
-        "cost_of_revenue": [
-            "CostOfRevenue"
-        ],
-        "gross_profit": [
-            "GrossProfit"
-        ],
-        "operating_expenses": [
-            "OperatingExpenses"
-        ],
-        "research_and_development": [
-            "ResearchAndDevelopmentExpense"
-        ],
-        "selling_general_admin": [
-            "SellingGeneralAndAdministrativeExpense"
-        ],
-        "operating_income": [
-            "OperatingIncomeLoss"
-        ],
-        "net_income": [
-            "NetIncomeLoss",
-            "ProfitLoss"
-        ],
-        "income_tax_expense": [
-            "IncomeTaxExpenseBenefit"
-        ],
-        "interest_expense": [
-            "InterestExpense"
-        ],
-        "eps_basic": [
-            "EarningsPerShareBasic"
-        ],
-        "eps_diluted": [
-            "EarningsPerShareDiluted"
-        ],
-        "shares_basic": [
-            "WeightedAverageNumberOfSharesOutstandingBasic"
-        ],
-        "shares_diluted": [
-            "WeightedAverageNumberOfDilutedSharesOutstanding"
-        ]
-    },
-
-    "balance_sheet": {
-        "assets": [
-            "Assets"
-        ],
-        "current_assets": [
-            "AssetsCurrent"
-        ],
-        "cash": [
-            "CashAndCashEquivalentsAtCarryingValue"
-        ],
-        "accounts_receivable": [
-            "AccountsReceivableNetCurrent"
-        ],
-        "inventory": [
-            "InventoryNet"
-        ],
-        "property_plant_equipment": [
-            "PropertyPlantAndEquipmentNet"
-        ],
-        "goodwill": [
-            "Goodwill"
-        ],
-        "intangible_assets": [
-            "IntangibleAssetsNetExcludingGoodwill"
-        ],
-        "liabilities": [
-            "Liabilities"
-        ],
-        "current_liabilities": [
-            "LiabilitiesCurrent"
-        ],
-        "accounts_payable": [
-            "AccountsPayableCurrent"
-        ],
-        "short_term_debt": [
-            "DebtCurrent"
-        ],
-        "long_term_debt": [
-            "LongTermDebt",
-            "LongTermDebtNoncurrent"
-        ],
-        "equity": [
-            "StockholdersEquity"
-        ],
-        "retained_earnings": [
-            "RetainedEarningsAccumulatedDeficit"
-        ]
-    },
-
-    "cash_flow": {
-        "operating_cash_flow": [
-            "NetCashProvidedByUsedInOperatingActivities"
-        ],
-        "investing_cash_flow": [
-            "NetCashProvidedByUsedInInvestingActivities"
-        ],
-        "financing_cash_flow": [
-            "NetCashProvidedByUsedInFinancingActivities"
-        ],
-        "capex": [
-            "PaymentsToAcquirePropertyPlantAndEquipment"
-        ],
-        "depreciation": [
-            "DepreciationDepletionAndAmortization"
-        ],
-        "stock_based_compensation": [
-            "ShareBasedCompensation"
-        ],
-        "dividends_paid": [
-            "PaymentsOfDividends"
-        ]
-    }
+    "revenues": [
+        "RevenueFromContractWithCustomerExcludingAssessedTax",
+        "RevenueFromContractWithCustomerIncludingAssessedTax",
+        "Revenues",
+        "SalesRevenueNet",
+        "SalesRevenueGoodsNet",
+        "SalesRevenueServicesNet",
+    ],
+    "cost_of_revenues": [
+        "CostOfRevenue",
+        "CostOfGoodsAndServicesSold",
+        "CostOfGoodsSold",
+        "CostOfServices",
+        "CostOfSales",
+    ],
+    "net_income": [
+        "NetIncomeLoss",
+        "ProfitLoss",
+        "NetIncomeLossAvailableToCommonStockholdersBasic",
+    ],
+    "assets": [
+        "Assets",
+    ],
+    "liabilities": [
+        "Liabilities",
+    ],
+    "equity": [
+        "StockholdersEquity",
+        "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest",
+    ],
+    "shares": [
+        "CommonStockSharesOutstanding",
+        "CommonStockSharesIssued",
+        "WeightedAverageNumberOfSharesOutstandingBasic",
+        "WeightedAverageNumberOfShareOutstandingBasicAndDiluted",
+    ],
 }
+
+BS_METRICS = {"assets", "liabilities", "equity", "shares"}
+IS_METRICS    = {"revenues", "cost_of_revenues", "net_income"}

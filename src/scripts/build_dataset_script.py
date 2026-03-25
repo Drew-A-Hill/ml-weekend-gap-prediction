@@ -4,36 +4,28 @@ Author: Drew Hill
 This file is a script that is used to build a complete dataset.
 """
 import pandas as pd
-
-import data_io.read_write_data as rw
-import data_pipelines.api_data_ingestion.data_developer as ddev
-import utils.terminal_run_status as status
-import data_pipelines.api_data_ingestion.price_data_retrieval as price_data
-import data_pipelines.api_data_ingestion.fundamentals_data_retrieval as fun
-from data_pipelines.company_selection.registered_companies import get_cik
+from data_io.read_write_data import read_from_csv, write_to_csv
+from data_pipelines.api_data_ingestion.fundamentals_hold import get_fundamentals
+from data_pipelines.api_data_ingestion.indicator_data_retrieval import add_indicators
+from data_pipelines.api_data_ingestion.price_data_retrieval import build_single_ticker_price_df
+from utils.terminal_run_status import ticker_iter_w_progress
 
 
 def dev_data_set() -> None:
-    companies: pd.DataFrame = rw.read_from_csv("filtered_company_list.csv")
+    data = read_from_csv("filtered_company_list.csv")
+    df = pd.DataFrame()
+    pdf = pd.DataFrame()
+    tickers = data["Ticker"]
 
-    tickers: pd.Series = companies["Ticker"]
+    for ticker in tickers:
+        fd = get_fundamentals(ticker, "2025", "2015")
+        df = pd.concat([df, fd])
 
-    df: pd.DataFrame = pd.DataFrame()
+    for ticker in ticker_iter_w_progress("Building Dataset", tickers):
+        p_data = build_single_ticker_price_df(ticker, open_p=True, close_p=True, high_p=True, low_p=True)
+        pdf = pd.concat([pdf, p_data], ignore_index=True)
 
-    for ticker in status.ticker_iter_w_progress("Building Dataset", tickers):
-        price: pd.DataFrame = price_data.build_single_ticker_price_df(
-            str(ticker),
-            open_p=True,
-            high_p=True,
-            low_p=True,
-            close_p=True,
-            volume=True,
-        )
+    df = add_indicators(df, add_all=True)
+    df = pd.merge(pdf, df, on=["Ticker", "Year", "Quarter"])
 
-        fundamental: pd.DataFrame = fun.build_single_ticker_fundamentals_df(get_cik(ticker), ticker, 10)
-
-        data: pd.DataFrame = ddev.dev_dataset_by_ticker(price=price, fundamental=fundamental)
-
-        df = pd.concat([df, data], ignore_index=True)
-
-    rw.write_to_csv(df, "dataset.csv")
+    write_to_csv(df, "dataset.csv")

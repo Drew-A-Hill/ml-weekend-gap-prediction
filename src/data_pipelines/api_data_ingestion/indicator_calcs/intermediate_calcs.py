@@ -21,7 +21,7 @@ def monday_open(df: pd.DataFrame) -> pd.Series:
     """
     monday_vals = df["Open"].where(df["Date"].dt.weekday == 0)
 
-    return monday_vals.groupby([df["Ticker"], df["Date"].dt.to_period("W")]).transform("first")
+    return monday_vals.groupby([df["Ticker"], df["Date"].dt.to_period("W-FRI")]).transform("first")
 
 def _friday_vals(df: pd.DataFrame, val_str: str) -> pd.Series:
     """
@@ -37,7 +37,7 @@ def friday_open(df: pd.DataFrame) -> pd.Series:
     :param df: The dataframe that contains all the price data.
     :returns: A pandas Series containing the Friday open repeated across each ticker-week.
     """
-    return _friday_vals(df, "Open").groupby([df["Ticker"], df["Date"].dt.to_period("W")]).transform("first")
+    return _friday_vals(df, "Open").groupby([df["Ticker"], df["Date"].dt.to_period("W-FRI")]).transform("first")
 
 def friday_close(df: pd.DataFrame) -> pd.Series:
     """
@@ -45,7 +45,7 @@ def friday_close(df: pd.DataFrame) -> pd.Series:
     :param df: The dataframe that contains all the price data.
     :returns: A pandas Series containing the Friday close repeated across each ticker-week.
     """
-    return _friday_vals(df, "Close").groupby([df["Ticker"], df["Date"].dt.to_period("W")]).transform("first")
+    return _friday_vals(df, "Close").groupby([df["Ticker"], df["Date"].dt.to_period("W-FRI")]).transform("first")
 
 def friday_volume(df: pd.DataFrame) -> pd.Series:
     """
@@ -53,7 +53,7 @@ def friday_volume(df: pd.DataFrame) -> pd.Series:
     :param df: The dataframe that contains all the price data.
     :returns: A pandas Series containing the Friday volume repeated across each ticker-week.
     """
-    return _friday_vals(df, "Volume").groupby([df["Ticker"], df["Date"].dt.to_period("W")]).transform("first")
+    return _friday_vals(df, "Volume").groupby([df["Ticker"], df["Date"].dt.to_period("W-FRI")]).transform("first")
 
 def weekly_high(df: pd.DataFrame) -> pd.Series:
     """
@@ -61,7 +61,7 @@ def weekly_high(df: pd.DataFrame) -> pd.Series:
     :param df: The dataframe that contains all the price data.
     :returns: A pandas Series containing the weekly high for each row's ticker-week.
     """
-    return df["High"].groupby([df["Ticker"], df["Date"].dt.to_period("W")]).transform("max")
+    return df["High"].groupby([df["Ticker"], df["Date"].dt.to_period("W-FRI")]).transform("max")
 
 def weekly_low(df: pd.DataFrame) -> pd.Series:
     """
@@ -69,7 +69,7 @@ def weekly_low(df: pd.DataFrame) -> pd.Series:
     :param df: The dataframe that contains all the price data.
     :returns: A pandas Series containing the weekly low for each row's ticker-week.
     """
-    return df["Low"].groupby([df["Ticker"], df["Date"].dt.to_period("W")]).transform("min")
+    return df["Low"].groupby([df["Ticker"], df["Date"].dt.to_period("W-FRI")]).transform("min")
 
 def weekly_avg_volume(df: pd.DataFrame) -> pd.Series:
     """
@@ -77,7 +77,7 @@ def weekly_avg_volume(df: pd.DataFrame) -> pd.Series:
     :param df: The dataframe that contains all the price data.
     :returns: A pandas Series containing the weekly average volume for each row's ticker-week.
     """
-    return df["Volume"].groupby([df["Ticker"], df["Date"].dt.to_period("W")]).transform("mean")
+    return df["Volume"].groupby([df["Ticker"], df["Date"].dt.to_period("W-FRI")]).transform("mean")
 
 def prev_friday_close(df: pd.DataFrame) -> pd.Series:
     """
@@ -250,4 +250,4 @@ def prev_quarter_revenue(df: pd.DataFrame) -> pd.Series:
     :param df: The dataframe that contains all the price data.
     :returns: A pandas Series containing the previous quarter revenue for each ticker.
     """
-    return df.groupby("Ticker")["Revenue"].transform(lambda s: s.shift(1))
+    return df.groupby("Ticker")["Revenues"].transform(lambda s: s.shift(1))

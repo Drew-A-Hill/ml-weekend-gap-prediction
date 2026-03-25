@@ -32,7 +32,7 @@ def atr(df: pd.DataFrame) -> pd.DataFrame:
     :param window: The window that will be used to calculate the atr.
     :returns: The input dataframe with an atr column added.
     """
-    df["ATR"] = ic.tr(df).groupby(df["Ticker"]).transform(lambda s: s.rolling(14).mean())
+    df["ATR"] = ic.tr(df).groupby(df["Ticker"]).transform(lambda s: s.rolling(5).mean())
 
     return df
 

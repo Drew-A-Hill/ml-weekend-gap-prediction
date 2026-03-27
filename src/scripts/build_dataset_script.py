@@ -29,4 +29,4 @@ def dev_data_set() -> None:
     time.sleep(15)
     df = add_indicators(df, add_all=True)
 
-    write_to_csv(df, "./fetched_data/dataset.csv")
+    write_to_csv(df, "./fetched_data/dataset2.csv")

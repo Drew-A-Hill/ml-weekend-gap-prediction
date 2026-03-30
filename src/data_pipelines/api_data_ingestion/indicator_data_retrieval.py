@@ -16,11 +16,11 @@ import data_pipelines.api_data_ingestion.indicator_calcs.fundamental as fi
 def _indicator_map() -> dict[str, dict[str, Any]]:
     return {
         "price_aggregates": {
-            "weekly_return": pa.weekly_return,
-            "intra_week_volatility": pa.intra_week_volatility,
-            "weekly_range": pa.weekly_range,
-            "friday_position": pa.friday_position,
-            "open_close_spread": pa.open_close_spread,
+            # "weekly_return": pa.weekly_return,
+            # "intra_week_volatility": pa.intra_week_volatility,
+            # "weekly_range": pa.weekly_range,
+            # "friday_position": pa.friday_position,
+            # "open_close_spread": pa.open_close_spread,
         },
 
         "momentum_indicators": {
@@ -42,11 +42,11 @@ def _indicator_map() -> dict[str, dict[str, Any]]:
             "five_d_std_dev": vi.five_d_std_dev,
         },
 
-        "volume_indicators": {
-            "obv": vol.obv,
-            "mfi": vol.mfi,
-            "volume_ratio": vol.volume_ratio,
-        },
+        # "volume_indicators": {
+        #     "obv": vol.obv,
+        #     "mfi": vol.mfi,
+        #     "volume_ratio": vol.volume_ratio,
+        # },
 
         "fundamental_indicators": {
             "gross_margin": fi.gross_margin,
@@ -62,28 +62,23 @@ def add_indicators(data: pd.DataFrame, indicators: list[str] | None=None, add_al
     """
 
     """
-
-    df: pd.DataFrame = pd.DataFrame()
-    action_map: dict[str, dict[str, Any]] = _indicator_map()
+    df = data.copy()
+    action_map = _indicator_map()
 
     if add_all:
         for key, val in action_map.items():
-
-            # print(val)
             for t, v in val.items():
-                # print(t)
-                df = v(data)
+                df = v(df)
 
         return df
 
-    else:
-        return df
+    if indicators:
+        for key, val in action_map.items():
+            for t, v in val.items():
+                if t in indicators:
+                    df = v(df)
 
+    return df
 
-
-#
-#
-# if __name__ == '__main__':
-#     add_indicators(pd.DataFrame())
 
 

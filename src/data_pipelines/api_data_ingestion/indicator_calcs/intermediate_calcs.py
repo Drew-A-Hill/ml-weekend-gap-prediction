@@ -236,13 +236,13 @@ def typical_price(df: pd.DataFrame) -> pd.Series:
     """
     return (df["High"] + df["Low"] + df["Close"]) / 3
 
-def raw_money_flow(df: pd.DataFrame) -> pd.Series:
-    """
-    Calculates raw money flow as typical price multiplied by trading volume.
-    :param df: The dataframe that contains all the price data.
-    :returns: A pandas Series containing raw money flow for each row.
-    """
-    return typical_price(df) * df["Volume"]
+# def raw_money_flow(df: pd.DataFrame) -> pd.Series:
+#     """
+#     Calculates raw money flow as typical price multiplied by trading volume.
+#     :param df: The dataframe that contains all the price data.
+#     :returns: A pandas Series containing raw money flow for each row.
+#     """
+#     return typical_price(df) * df["Volume"]
 
 def prev_quarter_revenue(df: pd.DataFrame) -> pd.Series:
     """

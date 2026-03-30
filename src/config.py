@@ -10,7 +10,7 @@ HEADER: dict[str, str] = {
 DATA_DIR = Path(__file__).resolve().parents[1] / "structured_csv_data_files"
 
 # -------------------------------------------------- Filtering --------------------------------------------------
-PERIOD: str = "10y"
+PERIOD: str = "13y"
 INTERVAL: str = "1d"
 
 MIN_CAP: int = 10_000_000_000

@@ -282,8 +282,6 @@ def set_col_order(fundamental_cols: list[str]) -> list[str]:
     """
 
     """
-
-
     return ["Ticker", "Year", "Quarter"] + fundamental_cols
 
 def get_fundamentals(ticker: str, start: str, end: str) -> pd.DataFrame:
@@ -310,25 +308,20 @@ def get_fundamentals(ticker: str, start: str, end: str) -> pd.DataFrame:
     facts: dict[str, Any] = helpers.fetch_facts(cik_padded)
     us_gaap: dict[str, Any] = facts.get("facts", {}).get("us-gaap", {})
 
-    # --- Extract income_statement metrics: {(end_date, fp): value} ---
     income_statement: dict[str, Any] = {}
     for metric in config.IS_METRICS:
         income_statement[metric] = _extract_is(
             us_gaap, config.FUNDAMENTAL_METRICS[metric], start_dt, end_dt
         )
 
-    # --- Derive Q4 ---
     _derive_q4(income_statement)
 
-    # --- Extract bs metrics: {end_date: value} ---
     bs: dict[str, Any] = {}
     for metric in config.BS_METRICS:
         bs[metric] = _extract_bs(
             us_gaap, config.FUNDAMENTAL_METRICS[metric], metric, start_dt, end_dt
         )
 
-    # --- Build rows from income_statement metric keys only ---
-    # Collect all (end_date, fp) keys present in ANY income_statement metric
     all_keys: set = set()
     for period_map in income_statement.values():
         all_keys.update(period_map.keys())
@@ -344,8 +337,6 @@ def get_fundamentals(ticker: str, start: str, end: str) -> pd.DataFrame:
 
     rows = []
     for end_date, period in sorted(all_keys):
-        # FY entries are removed by _derive_q4; skip any that remain
-        # (e.g. if Q1/Q2/Q3 were unavailable and FY couldn't be consumed)
         if period == "FY":
             continue
 
@@ -371,9 +362,6 @@ def get_fundamentals(ticker: str, start: str, end: str) -> pd.DataFrame:
     df = pd.DataFrame(rows, columns=set_col_order(get_fundamental_cols()))
     df = df.sort_values(["Year", "Quarter"], key=lambda col: col.map({"Q1": 1, "Q2": 2, "Q3": 3, "Q4": 4}) if col.name == "Quarter" else col).reset_index(drop=True)
 
-    # Fill missing quarters within each (Ticker, Year) group:
-    #   - forward-fill: Q2 gets Q1 if Q2 is NaN, Q3 gets Q2, Q4 gets Q3
-    #   - backward-fill: Q1 gets Q2 if Q1 is NaN, Q2 gets Q3, etc.
     df[get_fundamental_cols()] = (
         df.groupby(["Ticker", "Year"], sort=False)[get_fundamental_cols()]
           .transform(lambda g: g.ffill().bfill())

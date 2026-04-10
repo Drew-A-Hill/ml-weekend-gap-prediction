@@ -236,18 +236,24 @@ def typical_price(df: pd.DataFrame) -> pd.Series:
     """
     return (df["High"] + df["Low"] + df["Close"]) / 3
 
-def raw_money_flow(df: pd.DataFrame) -> pd.Series:
-    """
-    Calculates raw money flow as typical price multiplied by trading volume.
-    :param df: The dataframe that contains all the price data.
-    :returns: A pandas Series containing raw money flow for each row.
-    """
-    return typical_price(df) * df["Volume"]
+# def raw_money_flow(df: pd.DataFrame) -> pd.Series:
+#     """
+#     Calculates raw money flow as typical price multiplied by trading volume.
+#     :param df: The dataframe that contains all the price data.
+#     :returns: A pandas Series containing raw money flow for each row.
+#     """
+#     return typical_price(df) * df["Volume"]
 
 def prev_quarter_revenue(df: pd.DataFrame) -> pd.Series:
     """
-    Calculates the previous quarter's revenue for each ticker by shifting the revenue series by one period.
-    :param df: The dataframe that contains all the price data.
+    Calculates the previous quarter's revenue for each ticker.
+    :param df: The dataframe that contains all the fundamental data.
     :returns: A pandas Series containing the previous quarter revenue for each ticker.
     """
-    return df.groupby(["Ticker", "Year", "Quarter"])["Revenues"].transform(lambda s: s.shift(1))
+    quarterly = (df[["Ticker", "Year", "Quarter", "Revenues"]].drop_duplicates(
+            subset=["Ticker", "Year", "Quarter"]).sort_values(["Ticker", "Year", "Quarter"]))
+
+    quarterly["PrevRevenue"] = quarterly.groupby("Ticker")["Revenues"].shift(1)
+
+    return (df.merge(quarterly[["Ticker", "Year", "Quarter", "PrevRevenue"]],
+                 on=["Ticker", "Year", "Quarter"], how="left")["PrevRevenue"].reset_index(drop=True))

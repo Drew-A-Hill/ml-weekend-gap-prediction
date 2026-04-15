@@ -1,0 +1,304 @@
+================================================================================
+DATASET — NOTES FOR REPORT WRITING
+Weekend Gap Prediction | ML Project
+================================================================================
+
+--------------------------------------------------------------------------------
+1. DATA PIPELINE OVERVIEW
+--------------------------------------------------------------------------------
+The final modelling dataset (dataset_clean.csv) is the output of a 3-stage
+pipeline, starting from raw SEC ticker data and ending at a cleaned, feature-
+engineered Monday-only dataset ready for modelling.
+
+  Stage 1: Company selection
+    SEC-registered tickers → yfinance metadata → filtered company list
+    Output: fetched_data/filtered_company_list.csv
+
+  Stage 2: Data retrieval
+    Per-ticker: 10 years daily OHLCV (yfinance) + quarterly SEC XBRL filings
+    Merged on [Ticker, Year, Quarter]
+    Output: fetched_data/dataset2.csv (full daily dataset)
+
+  Stage 3: Feature engineering + weekly reduction
+    Indicators computed (EMAs, RSI, MACD, Bollinger, ATR, OBV, etc.)
+    Reduced to Monday + Friday rows only
+    Output: fetched_data/dataset_mon_fri.csv
+
+  EDA cleaning step (eda.ipynb):
+    Monday-only filter, target construction, imputation, flagging
+    Output: structured_csv_data_files/fetched_data/dataset_clean.csv
+
+All models and analyses in this project use dataset_clean.csv exclusively.
+
+--------------------------------------------------------------------------------
+2. COMPANY SELECTION — 25 LARGE-CAP US SOFTWARE COMPANIES
+--------------------------------------------------------------------------------
+Companies were filtered from the full SEC-registered universe using config.py:
+  - Exchange:    NASDAQ or NYSE only
+  - Sector:      Technology
+  - Industry:    Software (various sub-industries)
+  - Market cap:  Large-cap only
+  - Profitability: Positive profit margin required
+  - Public age:  Minimum trading history required
+
+Final 25 tickers:
+  ADBE, ADP, ADSK, AKAM, CDNS, CPAY, CRM, FFIV, FICO, FTNT, GEN, GWRE,
+  HUBS, INTU, NOW, NTAP, PANW, PAYX, PTC, ROP, SNPS, SSNC, TYL, VRSN, WDAY
+
+Rationale for software sector focus:
+  Software companies have relatively homogeneous exposure to macro conditions
+  (interest rates, risk appetite) and share common catalysts (earnings, product
+  releases, index rebalancing). This reduces cross-ticker heterogeneity compared
+  to a multi-sector universe, making a pooled model more defensible.
+
+Date range: April 2016 – December 2024 (data availability varies per ticker).
+Shortest history: ADSK (279 Monday rows), longest: WDAY (358 Monday rows).
+
+--------------------------------------------------------------------------------
+3. FROM dataset_mon_fri TO dataset_clean — ROW REDUCTION
+--------------------------------------------------------------------------------
+dataset_mon_fri.csv: 24,894 rows (11,949 Mondays + 12,945 Fridays)
+dataset_clean.csv:    8,437 rows (Monday rows only, after all cleaning)
+
+Row reduction breakdown:
+
+  Step 1: Keep only Monday rows
+    11,949 Monday rows remain.
+    Friday rows are not dropped arbitrarily — their Close values are already
+    broadcast into the Monday row of the same week via the pipeline's
+    .transform() groupby (see: indicator_calcs/intermediate_calcs.py,
+    _friday_vals()). So each Monday row already contains that week's Friday
+    close (FridayClose column) and the prior week's Friday close (PrevFriClose,
+    computed via .ffill().shift(1)).
+
+  Step 2: Drop warmup-period NaN rows
+    Technical indicators require a minimum lookback period before they can be
+    computed. For example:
+      RSI requires 14 periods
+      MACD requires 26 periods (slow EMA)
+      ADX requires 14 periods
+      BollingerBand requires 20 periods
+    The first ~6 months of data per ticker contain NaN in one or more indicator
+    columns. These rows are dropped entirely because the feature vector is
+    incomplete — 2,482 Monday rows dropped.
+
+  Step 3: Drop holiday-week rows
+    Some weeks have no valid Friday (market holiday). For these weeks,
+    WeeklyReturn, FridayPosition, and VolumeRatio cannot be computed (NaN).
+    Rows where these are NaN are dropped — 278 rows dropped.
+
+  Step 4: Target construction (GapUp)
+    For each Monday row, the previous Friday's Close (PrevFriClose) is looked
+    up using .groupby(Ticker).shift(1) on the Friday rows — this is the correct
+    approach that does NOT leak future data. GapUp = 1 if Monday Open >
+    PrevFriClose, else 0. Any Monday row where PrevFriClose is unavailable
+    (e.g. first Monday of a ticker with no prior Friday) is dropped.
+
+  Rows remaining after all steps: 8,437
+
+  Summary of reduction:
+    dataset_mon_fri Mondays   11,949
+    Warmup NaN rows dropped    2,482
+    Holiday-week rows dropped    278
+    No-prior-Friday dropped      752  (residual: invalid Mon-Fri pairs)
+    dataset_clean              8,437
+
+--------------------------------------------------------------------------------
+4. LOOK-AHEAD LEAKAGE — IDENTIFIED AND RESOLVED
+--------------------------------------------------------------------------------
+A critical data integrity issue was identified during EDA via code inspection
+of src/data_pipelines/api_data_ingestion/indicator_calcs/price_aggregate.py.
+
+The pipeline computes weekly price aggregates using:
+    df.groupby(['Ticker', 'WeekOfYear', 'Year'])['Close'].transform('last')
+
+The .transform() operation broadcasts the same week's final value (Friday's
+Close) to ALL rows in that week — including Monday. This means that on a Monday
+row, WeeklyReturn, FridayPosition, IntraWeekVolatility, and OpenCloseSpread
+all contain values derived from the same week's Friday data, which does not
+exist at prediction time Monday morning.
+
+Verification: Monday and Friday rows from the same week show identical values
+for these four features — confirming the leakage.
+
+Decision: All four features are excluded from ALL models.
+  Excluded: WeeklyReturn, FridayPosition, IntraWeekVolatility, OpenCloseSpread
+
+This decision was confirmed correct via code inspection of intermediate_calcs.py
+which shows PrevFriClose is computed correctly (via .ffill().shift(1)) while
+the price aggregates use the leaky .transform() pattern.
+
+--------------------------------------------------------------------------------
+5. TARGET VARIABLE CONSTRUCTION
+--------------------------------------------------------------------------------
+Binary classification target: GapUp
+
+  GapUp = 1  if  Monday Open > previous Friday Close
+  GapUp = 0  if  Monday Open <= previous Friday Close
+
+  GapMagnitude = (Monday Open - previous Friday Close) / previous Friday Close
+  (continuous version, retained in dataset for reference but not used as target)
+
+Construction method:
+  For each ticker, rows are sorted chronologically. Friday Close values are
+  extracted and shifted forward by one week using:
+    df.groupby('Ticker')['FriClose'].shift(1)
+  This produces PrevFriClose on the Monday row — the Friday close that
+  actually existed before Monday's open.
+
+Distribution:
+  GapUp = 1:  4,337 rows (51.4%)
+  GapUp = 0:  4,100 rows (48.6%)
+  Near-balanced — no class weighting needed in primary modelling.
+
+--------------------------------------------------------------------------------
+6. MISSING VALUE TREATMENT — THREE TYPES
+--------------------------------------------------------------------------------
+Three structurally distinct types of missing values were identified:
+
+TYPE 1 — Warmup-period NaNs (technical indicators)
+  Cause: Indicators require N periods of history before they can be computed.
+  Rows affected: ~2,482 Monday rows (first ~6 months per ticker).
+  Decision: Drop rows entirely. A row missing 10+ indicator values cannot be
+  imputed meaningfully — the indicator value does not exist yet.
+
+TYPE 2 — Holiday-week NaNs (price aggregates)
+  Cause: No Friday trading day exists in a given week (market holiday).
+  Rows affected: ~278 Monday rows.
+  Decision: Drop rows entirely. The Friday Close needed for PrevFriClose is
+  missing, making the target variable (GapUp) uncomputable.
+
+TYPE 3 — Structural fundamental NaNs (SEC XBRL filing gaps)
+  Cause: Some companies do not report certain line items consistently in SEC
+  XBRL filings. Affected columns: GrossMargin/CostOfRevenues (WDAY, CDNS
+  among others), Liabilities (some tickers), Shares.
+  Decision: DO NOT drop rows or tickers. Instead:
+    a) Impute with the ticker's own historical median where possible
+    b) For tickers with 100% missing (e.g. WDAY/CDNS GrossMargin), fall back
+       to the global median across all 25 tickers
+    c) Add binary missingness indicator columns: GrossMargin_missing,
+       CostOfRevenues_missing, Liabilities_missing
+       (= 1 where the original value was imputed)
+  Rationale: dropping WDAY or CDNS would lose 347-358 rows of data from two
+  important tickers. The missingness indicator preserves the information that
+  these values are imputed — the model can learn to discount them.
+
+Missingness indicator distribution in dataset_clean:
+  GrossMargin_missing = 1:    1,216 rows (14.4%)
+  CostOfRevenues_missing = 1: 1,216 rows (14.4%)
+  Liabilities_missing = 1:    1,549 rows (18.4%)
+
+Residual structural NaNs (not imputed — raw balance sheet columns):
+  Liabilities:     896 NaN  (raw column, not used in models)
+  CostOfRevenues:  690 NaN  (raw column, not used in models)
+  GrossProfit:     690 NaN  (raw column, not used in models)
+  Shares:          184 NaN  (raw column, not used in models)
+  These are the underlying SEC filing columns, kept for reference.
+  The derived feature columns (GrossMargin etc.) have zero NaN after imputation.
+
+--------------------------------------------------------------------------------
+7. COVID EXTREME EVENT FLAGGING
+--------------------------------------------------------------------------------
+During EDA, a cluster of extreme gap magnitudes was identified in Feb-May 2020
+corresponding to the COVID-19 market crash. These rows represent a severe market
+regime shift — not a normal weekly gap pattern.
+
+  is_extreme_event = 1: rows where Date is between 2020-02-01 and 2020-05-31
+  is_extreme_event = 0: all other rows
+
+Counts:
+  Primary (non-extreme):  8,146 rows  — used in all primary model training/eval
+  Extreme (COVID):          291 rows  — held out for secondary evaluation only
+
+Rationale for flagging rather than dropping:
+  Including the COVID rows in primary training would teach the model that
+  extreme macroeconomic shocks are a normal source of variation — biasing it
+  toward overweighting crash signals. Excluding them entirely would discard
+  291 real observations. The compromise: flag them, exclude from primary
+  evaluation, use them in a secondary evaluation to test model robustness
+  under extreme conditions.
+
+  All secondary evaluations across LogReg, XGBoost, and LSTM come with the
+  caveat that elevated COVID AUC (0.54-0.78 across models) is an artifact of
+  the crash being directionally unidirectional (GapDown dominated), not
+  evidence of true model robustness.
+
+--------------------------------------------------------------------------------
+8. FINAL DATASET STRUCTURE — dataset_clean.csv
+--------------------------------------------------------------------------------
+Shape: 8,437 rows × 49 columns
+
+Column groups:
+  Metadata (6):      Date, Year, Quarter, WeekOfYear, DayOfWeek, Ticker
+  OHLCV (5):         Open, Close, High, Low, Volume
+  Fundamentals raw (8): Revenues, CostOfRevenues, GrossProfit, NetIncome,
+                         Assets, Liabilities, Equity, Shares
+  Price aggregates (5):  WeeklyReturn*, IntraWeekVolatility*, WeeklyRange,
+                          FridayPosition*, OpenCloseSpread*
+  Momentum (4):      RSI, MACD, ROC, StochPercK
+  Trend (3):         CloseVEma50, CloseVSma20, ADX
+  Volatility (3):    BollingerBandWidth, ATR, FiveDStdDev
+  Volume (3):        OBV, MFI, VolumeRatio
+  Fundamental (4):   GrossMargin, NetMargin, RoA, RevGrowthQoQ
+  Target (3):        PrevFriClose, GapMagnitude, GapUp
+  Added (4):         Date_notz, GrossMargin_missing, CostOfRevenues_missing,
+                     Liabilities_missing
+  Flag (1):          is_extreme_event
+
+  * Leaky — excluded from all models
+
+Zero missing values in all feature columns used for modelling.
+
+--------------------------------------------------------------------------------
+9. FEATURE SET SUMMARY BY MODEL
+--------------------------------------------------------------------------------
+  Feature                   LogReg   XGBoost   LSTM    Reason for exclusion
+  -------                   ------   -------   ----    --------------------
+  RSI                         No       Yes      Yes    VIF=27.3 in LogReg
+  MACD                        Yes      Yes      Yes
+  ROC                         Yes      Yes      Yes
+  StochPercK                  Yes      Yes      Yes
+  CloseVEma50                 Yes      Yes      Yes
+  CloseVSma20                 Yes      Yes      Yes    (zeroed by L1 in LogReg)
+  ADX                         Yes      Yes      Yes
+  BollingerBandWidth          Yes      Yes      Yes
+  ATR                         Yes      Yes      Yes
+  FiveDStdDev                 Yes      Yes      Yes
+  OBV                         Yes      Yes      Yes
+  MFI                         Yes      Yes      Yes
+  VolumeRatio                 Yes      Yes      Yes
+  WeeklyRange                 No       Yes      Yes    VIF=10.9 in LogReg
+  GrossMargin                 No       Yes      No     VIF=1035 in LogReg; static quarterly
+  NetMargin                   Yes      Yes      No     Static quarterly for LSTM
+  RoA                         Yes      Yes      No     Static quarterly for LSTM
+  RevGrowthQoQ                Yes      Yes      No     Static quarterly for LSTM
+  GrossMargin_missing         Yes      Yes      No     Data quality, not temporal
+  CostOfRevenues_missing      Yes      Yes      No     Data quality, not temporal
+  Liabilities_missing         Yes      Yes      No     Data quality, not temporal
+  WeeklyReturn                No       No       No     LEAKY
+  FridayPosition              No       No       No     LEAKY
+  IntraWeekVolatility         No       No       No     LEAKY
+  OpenCloseSpread             No       No       No     LEAKY
+
+  Total features:             18       21       14
+
+--------------------------------------------------------------------------------
+10. KEY DECISIONS SUMMARY
+--------------------------------------------------------------------------------
+  Decision                    Choice              Rationale
+  --------                    ------              ---------
+  Universe                    25 large-cap SW     Homogeneous sector, pooled model defensible
+  Date range                  2016-2024           ~8yr history, post-2016 data quality
+  Target                      Binary GapUp        Monday Open vs prev Friday Close
+  Warmup NaNs                 Drop rows           Indicator not computable, cannot impute
+  Holiday-week NaNs           Drop rows           Target uncomputable without Friday Close
+  Structural fundamental NaNs Impute + flag       Preserve rows, signal missingness
+  COVID rows                  Flag, hold out      Separate primary/secondary evaluation
+  Leaky price aggregates      Exclude all models  .transform() broadcasts future Friday data
+  VIF pruning (LogReg only)   Drop RSI, GrossMargin, WeeklyRange at VIF > 10
+  Class balance               None needed         51.4%/48.6% near-equal split
+  Train/test strategy         Walk-forward        Time series — no shuffling, no k-fold
+
+================================================================================
+END OF DATASET NOTES
+================================================================================

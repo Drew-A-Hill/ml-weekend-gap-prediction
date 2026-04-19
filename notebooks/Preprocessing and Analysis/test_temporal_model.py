@@ -30,10 +30,9 @@ from sklearn.metrics import roc_auc_score
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
-PROJECT_ROOT  = Path(__file__).resolve().parents[1]
-DATASET_PATH  = PROJECT_ROOT / "structured_csv_data_files" / "fetched_data" / "dataset_clean_temporal.csv"
-PLOTS_PATH    = PROJECT_ROOT / "structured_csv_data_files" / "fetched_data" / "plots"
-
+#PROJECT_ROOT  = Path(__file__).resolve().parents[1]
+DATASET_PATH  = "../../structured_csv_data_files/fetched_data/dataset_clean.csv"
+PLOTS_PATH    = "../../structured_csv_data_files/fetched_data/plots" 
 TARGET = "GapUp"
 
 BASELINE_FEATURES = [

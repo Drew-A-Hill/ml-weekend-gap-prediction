@@ -1,29 +1,24 @@
 # ML Weekend Gap Prediction
 
-> **Project:** Weekend gap research / feature pipeline (stocks)
-> **Runs locally:**  (Python + `yfinance`)
-> **Primary entrypoint:** `./run_featured_company_dev.sh`
+> **Project:** Predicting weekend price gaps in US software equities using machine learning
+> **Scope:** 25 large-cap software companies, 2016–2024, weekly observations
+> **Runs locally:** Python + `yfinance` + SEC XBRL
 
-Build a small, repeatable dataset to explore **weekend gaps** (Friday close → Monday open) across a curated list of “featured” tickers — using a script-driven workflow that’s easy to run locally and iterate on.
+Build a dataset and train three ML models (Logistic Regression, XGBoost, LSTM) to predict whether Monday's opening price will be higher or lower than the previous Friday's closing price.
 
 ---
 
-## What it does
+## Overview
 
-Run one command → the project:
+This project investigates whether publicly available technical indicators (momentum, trend, volatility, volume) and fundamental metrics can predict the direction of weekend price gaps. The pipeline pulls daily price data from Yahoo Finance and quarterly financial filings from SEC XBRL, engineers a set of weekly features, and evaluates three classes of models under walk-forward validation.
 
-- Loads a curated ticker list from `structured_csv_data_files/featured_companies.csv`
-- Pulls market data via `yfinance`
-- Builds / refreshes a local dataset for development + experimentation
-- Prints progress to the terminal (with `tqdm`) while it runs
-
-> The “featured companies” workflow is currently the main dev path. (There’s also a second dev dataset script in `src/scripts/`.)
+Target variable (binary): `GapUp = 1` if Monday Open > previous Friday Close, else `0`.
 
 ---
 
 ## Quickstart
 
-### 1) Clone + install dependencies
+### 1) Clone and install dependencies
 
 ```bash
 git clone https://github.com/Drew-A-Hill/ml-weekend-gap-prediction.git
@@ -35,34 +30,27 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 2) Run the featured ticker pipeline
+### 2) Run the data pipeline
 
 ```bash
-chmod +x ./run_featured_company_dev.sh
-./run_featured_company_dev.sh
+chmod +x ./run_script.sh
+./run_script.sh
 ```
 
-To stop the run: **CTRL + C**
+This presents an interactive menu to run one of three scripts:
+1. `collect_company_metadata` — fetch SEC tickers and yfinance metadata
+2. `build_list_of_companies` — apply filters from `config.py`
+3. `dev_data_set` — build the full feature dataset
 
----
+### 3) Explore the notebooks
 
-## Architecture (current)
-
-This repo is intentionally lightweight: scripts + a `src/` package used via `PYTHONPATH`.
-
+```bash
+jupyter notebook notebooks/
 ```
-┌─────────────────────────────────────────────────────┐
-│                 local python runtime                │
-│                                                     │
-│  run_featured_company_dev.sh                        │
-│    ├─ sets PYTHONPATH=src                           │
-│    └─ runs src/scripts/featured_companies_dev_script│
-│                                                     │
-│  Data sources: yfinance                             │
-│  Data shaping: pandas                               │
-│  Inputs: structured_csv_data_files/*.csv            │
-└─────────────────────────────────────────────────────┘
-```
+
+Notebooks in `notebooks/` cover EDA, statistical analysis, and the three model implementations.
+
+To stop any run: **CTRL + C**
 
 ---
 
@@ -71,72 +59,49 @@ This repo is intentionally lightweight: scripts + a `src/` package used via `PYT
 ```
 ml-weekend-gap-prediction/
 ├── requirements.txt
-├── run_featured_company_dev.sh
-├── structured_csv_data_files/
-│   └── featured_companies.csv
+├── run_script.sh
+├── notebooks/                    # EDA, statistical analysis, model notebooks
+├── structured_csv_data_files/    # CSV inputs and pipeline outputs
 └── src/
-    ├── __init__.py
     ├── config.py
-    ├── README.md
     ├── data_io/
-    ├── data_pipelines/
-    ├── feature_selection/
-    ├── metric_types/
-    ├── models/
+    ├── data_pipelines/           # company selection, data retrieval, indicators
     ├── scripts/
-    │   ├── dev_data_set_script.py
-    │   └── featured_companies_dev_script.py
     └── utils/
 ```
 
 ---
 
-## Data inputs
+## Libraries used
 
-### Featured tickers
+**Data collection and processing**
+- `pandas` — dataset construction and manipulation
+- `numpy` — numerical operations
+- `yfinance` — daily OHLCV price data
+- `requests`, `urllib3`, `curl-cffi` — SEC XBRL API calls
+- `tqdm` — progress bars
 
-`structured_csv_data_files/featured_companies.csv` contains one column:
+**Statistical analysis**
+- `scipy` — Shapiro-Wilk, Spearman, Mann-Whitney tests
+- `statsmodels` — ADF stationarity test, ACF/PACF, VIF, Logit for AIC/BIC
 
-- `featured_tickers`
+**Machine learning**
+- `scikit-learn` — logistic regression, preprocessing (StandardScaler, etc.), metrics
+- `xgboost` — gradient boosted trees
+- `torch` — LSTM implementation
 
-Example values include (as currently committed): `TXN`, `ADI`, `QCOM`, `MRVL`, `MPWR`, `NXPI`, etc.
+**Visualisation**
+- `matplotlib` — plots and charts
+- `seaborn` — correlation heatmaps, styled tables
 
----
-
-## Scripts
-
-Scripts live in `src/scripts/`.
-
-| Script | What it’s for | How to run |
-|-------|----------------|-----------|
-| `featured_companies_dev_script.py` | Main dev workflow: run on curated tickers | `./run_featured_company_dev.sh` |
-| `dev_data_set_script.py` | Secondary dev workflow / dataset builder | `python3 src/scripts/dev_data_set_script.py` *(see note below)* |
-
-**Note:** `./run_featured_company_dev.sh` sets `PYTHONPATH=src` for you. If you run scripts directly, you may need:
-
-```bash
-export PYTHONPATH=src
-python3 src/scripts/dev_data_set_script.py
-```
-
----
-
-## Dependencies
-
-Pinned in `requirements.txt`:
-
-- `pandas>=2.0`
-- `yfinance>=0.2`
-- `tqdm>=4.0`
-- `requests>=2.0`
-- `urllib3>=2.0`
-- `curl-cffi>=0.7`
+> Note: `requirements.txt` currently lists only data-collection dependencies. Install `scikit-learn`, `xgboost`, `torch`, `statsmodels`, `scipy`, `matplotlib`, and `seaborn` separately if running the notebooks.
 
 ---
 
 ## Common issues / troubleshooting
 
-### “ModuleNotFoundError: …” when running scripts directly
+### "ModuleNotFoundError: ..." when running scripts directly
+
 Use the provided runner script, or set:
 
 ```bash
@@ -144,12 +109,19 @@ export PYTHONPATH=src
 ```
 
 ### Rate limits / flaky downloads
-If `yfinance` requests fail intermittently, re-run the script. (The project also depends on `requests`, `urllib3`, and `curl-cffi`, which can help with HTTP reliability depending on how the code is written.)
+
+If `yfinance` or SEC requests fail intermittently, re-run the script. The pipeline includes built-in rate limiting for the SEC API — do not remove the pauses in `utils/terminal_run_status.py`.
+
+### XGBoost `libxgboost.dylib` not loaded (macOS)
+
+Install OpenMP runtime:
+
+```bash
+brew install libomp
+```
 
 ---
 
 ## Disclaimer
 
-This repository is for educational/research purposes only and **not financial advice**. Market data quality/availability may vary.
-
----
+This repository is for educational and research purposes only and **not financial advice**. Market data quality and availability may vary.
